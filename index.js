@@ -9,13 +9,14 @@ const { PeerMessage, PEER_MESSAGE_TYPES, PEER_MESSAGE_STRING }
   = require('./lib/message');
 
 const args = require('./lib/expect')({
-    'port': "", //optional (defaults to 26781)
-    'peers': [","], //optional (defaults to [])
-    'ring': "", //required (defaults to ring.pub)
-    'private': "", //optional (defaults to peer.pem)
+    'port': "", // optional (defaults to 26781)
+    'peers': [","], // optional (defaults to [])
+    'ring': "", // required (defaults to ring.pub)
+    'private': "", // optional (defaults to peer.pem)
     'public': "", // optional (defaults to peer.pub)
-    'signature': "", //required (peer won't start without)
-    'd': "" // optional
+    'signature': "", // required (peer won't start without)
+    'd': "", // optional
+    'range': [","] // optional (defaults to [26780,26790])
   });
 
 console.log(args);
@@ -29,7 +30,8 @@ var p = new Peer({
   'publicKey': args.public,
   'privateKey': args.private,
   'ringPublicKey': args.ring,
-  'signature': args.signature
+  'signature': args.signature,
+  'range': args.range
 });
 
 // ----------------------------------------------------------------------------------
@@ -38,30 +40,48 @@ var p = new Peer({
 // ----------------------------------------------------------------------------------
 
 if(!args.d || args.d.length < 1) {
+  var queue = [];
+  var canSend = false;
+  
+  var readInterface = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'NET> '
+  });
+  
+  p.on('discovering', () => {
+    canSend = false;
+    readInterface.pause();
+  });
+  
   p.on('discovered', () => {
-    var readInterface = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: 'NET> '
-    });
+    canSend = true;
     
     readInterface.prompt();
-  
-    readInterface.on('line', (line) => {
-      if(line && line.toString().length > 0) {
-        line = line.toString();
-        
-        if(line == 'exit') // User typed 'exit'
-          return readInterface.close(); //close return
-        
-        var message = new PeerMessage({ messageType: PEER_MESSAGE_TYPES.update });
-        message.body = { 'data': line };
-
-        p.broadcast({ message });
-      }
       
-      //readInterface.prompt();
-    });
+    // Send all the queued messages
+    for(let i=queue.length-1; i>-1; i--) {
+      p.broadcast({ message: queue.splice(i,1) });
+    }
+  });
+
+  readInterface.on('line', (line) => {
+    if(line && line.toString().length > 0) {
+      line = line.toString();
+      
+      if(line == 'exit') // User typed 'exit'
+        return readInterface.close(); //close return
+      
+      var message = new PeerMessage({ messageType: PEER_MESSAGE_TYPES.update });
+      message.body = { 'data': line };
+      
+      if(canSend)
+        p.broadcast({ message });
+      else
+        queue.push(message);
+    }
+    
+    //readInterface.prompt();
   });
 }
 
