@@ -1,4 +1,32 @@
-No command '$' found, did you mean:
- Command '[' from package 'coreutils'
- Command 'k' from package 'kona'
- Command 'w' from package 'procps'
+{ port: '26781',
+  signature: 'peer1.signature',
+  ring: 'ring.pub',
+  private: 'peer1.pem',
+  public: 'peer1.pub',
+  debug: true,
+  d: true }
+Checking for Ring Public Key at ring.pub
+Checking for Signature at peer1.signature
+Peer signature (last 50 bytes): 
+	SCkSQLWykJP5dvo6OBjQR7lc4okZRMLHtDbDed2jDsnw/05k76P4pi8AjtVGv4JWtds=
+Server listening on 26781
+New server connection...
+Peer.setupConnection() invoked
+Peer.setupConnection: new peer is undefined
+Peer.setupConnection: sending HELO to connection...
+Incoming message 'helo' from ::ffff:127.0.0.1:undefined
+	Got peer public key...
+		-> Signature: 9EYDzBk+4yz6R26fb/JgO5tdfwR4Fv8FzTgianNgJCtPNpTUdA2MQsWK6Az4gcreq5I=
+	keyIsSigned: true
+	Peer at ::ffff:127.0.0.1:undefined is now TRUSTED.
+Incoming message 'trusted' from ::ffff:127.0.0.1:undefined
+Incoming message 'update' from ::ffff:127.0.0.1:undefined
+Encrypted Message Body: 0Vp2FL49MPC02Z1EdDPtmlraHhW+7Mb0Ip7rGf80qJEE6Fq/F9REnY9Is0xx3L1gwbAKzDU0SZ9V1FGJwfT+tFv9XcOFA0225IgTeDaK30I=
+PeerMessage {
+  header: 
+   { type: 2,
+     timestamp: '2018-05-11T13:40:06.132Z',
+     hash: 'ce01374b2fcc48237ddf72641925a1936e1fa5198d6379564a07ed2ccc53f7ff' },
+  body: 
+   { data: 'lkjhgchjklkhvgckjghcfxdzxgyuhkgyjfcjuhijopjihukgyfcuijohuk' } }
+Connection Closed
