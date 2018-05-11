@@ -1,0 +1,4 @@
+No command '$' found, did you mean:
+ Command '[' from package 'coreutils'
+ Command 'k' from package 'kona'
+ Command 'w' from package 'procps'

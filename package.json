@@ -1,0 +1,29 @@
+{
+  "name": "ringnet",
+  "version": "0.0.1",
+  "description": "A secure peer-to-peer network discovery module based on WebSockets using RSA and AES.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "peer-to-peer",
+    "p2p",
+    "discovery",
+    "dscvry",
+    "network",
+    "networking",
+    "http",
+    "https",
+    "secure",
+    "rsa",
+    "aes",
+    "aes-256-cbc"
+  ],
+  "author": "Eric Hill",
+  "license": "MIT",
+  "dependencies": {
+    "node-rsa": "^0.4.2",
+    "websocket": "^1.0.26"
+  }
+}
