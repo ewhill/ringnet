@@ -2,13 +2,10 @@
 
 const fs = require('fs');
 const readline = require('readline');
-const NodeRSA = require('node-rsa');
 
-const Peer = require('../lib/peer');
-const { PeerMessage, PEER_MESSAGE_TYPES, PEER_MESSAGE_STRING } 
-  = require('../lib/message');
+const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.js');
 
-const args = require('../lib/expect')({
+const args = (new Expectation({
     'port': "", // optional (defaults to 26781)
     'peers': [","], // optional (defaults to [])
     'ring': "", // required (defaults to ring.pub)
@@ -17,7 +14,7 @@ const args = require('../lib/expect')({
     'signature': "", // required (peer won't start without)
     'd': "", // optional
     'range': [","] // optional (defaults to [26780,26790])
-  });
+  })).args;
 
 console.log(args);
 
@@ -79,7 +76,7 @@ if(!args.d || args.d.length < 1) {
         while(queue.length > 0)
           p.broadcast({ message: queue.splice(0,1)[0] });
       } else {
-        var message = new PeerMessage({ messageType: PEER_MESSAGE_TYPES.update });
+        var message = new PeerMessage({ messageType: PeerMessage.PEER_MESSAGE_TYPES.update });
         message.body = { 'data': line };
         
         if(isReady && canSend)

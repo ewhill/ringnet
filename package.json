@@ -1,10 +1,13 @@
 {
   "name": "ringnet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A secure peer-to-peer network discovery module based on WebSockets using RSA and AES.",
-  "main": "lib/peer.js",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No test specified.\" && exit",
+    "peer1": "node test/peerCommandLine.js -port=26781 -ring=ring.pub -signature=peer1.signature -private=peer1.pem -public=peer1.pub",
+    "peer2": "node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=ring.pub -signature=peer2.signature -private=peer2.pem -public=peer2.pub",
+    "peer3": "node test/peerCommandLine.js -port=26783 -peers=127.0.0.1:26782 -ring=ring.pub -signature=peer3.signature -private=peer3.pem -public=peer3.pub"
   },
   "keywords": [
     "peer-to-peer",
