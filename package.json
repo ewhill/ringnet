@@ -1,8 +1,8 @@
 {
   "name": "ringnet",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A secure peer-to-peer network discovery module based on WebSockets using RSA and AES.",
-  "main": "index.js",
+  "main": "lib/peer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

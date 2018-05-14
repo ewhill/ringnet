@@ -4,11 +4,11 @@ const fs = require('fs');
 const readline = require('readline');
 const NodeRSA = require('node-rsa');
 
-const Peer = require('./lib/peer');
+const Peer = require('../lib/peer');
 const { PeerMessage, PEER_MESSAGE_TYPES, PEER_MESSAGE_STRING } 
-  = require('./lib/message');
+  = require('../lib/message');
 
-const args = require('./lib/expect')({
+const args = require('../lib/expect')({
     'port': "", // optional (defaults to 26781)
     'peers': [","], // optional (defaults to [])
     'ring': "", // required (defaults to ring.pub)
