@@ -26,7 +26,7 @@ var DSCVRY_SAVEFILE = args.save || `${Date.now()}.json`;
 var p = new Peer({
   'port': args.port,
   'addresses': args.peers,
-  'debug': args.debug,
+  'debug': args.debug || args.v || args.verbose,
   'publicKey': args.public,
   'privateKey': args.private,
   'ringPublicKey': args.ring,
@@ -44,6 +44,11 @@ p.on('ready', () => {
   isReady = true;
 });
 
+p.on('message', ({ message, connection }) => {
+  // TODO: Do something with the message (Update DB, Blockchain, etc...)
+  console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
+});
+
 if(!args.d || args.d.length < 1) {
   var queue = [];
   var canSend = true;
@@ -53,22 +58,6 @@ if(!args.d || args.d.length < 1) {
     output: process.stdout,
     prompt: 'NET> '
   });
-  
-  // p.on('discovering', () => {
-  //   canSend = false;
-  //   readInterface.pause();
-  // });
-  
-  // p.on('discovered', () => {
-  //   canSend = true;
-    
-  //   readInterface.prompt();
-      
-  //   // Send all the queued messages
-  //   for(let i=queue.length-1; i>-1; i--) {
-  //     p.broadcast({ message: queue.splice(i,1) });
-  //   }
-  // });
 
   readInterface.on('line', (line) => {
     if(line && line.toString().length > 0) {
