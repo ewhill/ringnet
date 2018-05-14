@@ -62,7 +62,7 @@ if(!args.d || args.d.length < 1) {
       
       if(line == 'exit') { // User typed 'exit'
         readInterface.close(); //close return
-        process.exit(1);
+        process.exit(0);
       } else if(line == 'peers') {
         console.log(`\n\n${JSON.stringify(p.getPeerList())}\n\n`);
       } else if(line == 'queue') {
