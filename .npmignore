@@ -1,5 +1,7 @@
 .gitignore
 *.pem
 *.pub
+*.signature
+p*.txt
 node_modules/*
 package-lock.json
