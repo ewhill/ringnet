@@ -39,9 +39,14 @@ var p = new Peer({
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 
+var isReady = false;
+p.on('ready', () => {
+  isReady = true;
+});
+
 if(!args.d || args.d.length < 1) {
   var queue = [];
-  var canSend = false;
+  var canSend = true;
   
   var readInterface = readline.createInterface({
     input: process.stdin,
@@ -49,39 +54,51 @@ if(!args.d || args.d.length < 1) {
     prompt: 'NET> '
   });
   
-  p.on('discovering', () => {
-    canSend = false;
-    readInterface.pause();
-  });
+  // p.on('discovering', () => {
+  //   canSend = false;
+  //   readInterface.pause();
+  // });
   
-  p.on('discovered', () => {
-    canSend = true;
+  // p.on('discovered', () => {
+  //   canSend = true;
     
-    readInterface.prompt();
+  //   readInterface.prompt();
       
-    // Send all the queued messages
-    for(let i=queue.length-1; i>-1; i--) {
-      p.broadcast({ message: queue.splice(i,1) });
-    }
-  });
+  //   // Send all the queued messages
+  //   for(let i=queue.length-1; i>-1; i--) {
+  //     p.broadcast({ message: queue.splice(i,1) });
+  //   }
+  // });
 
   readInterface.on('line', (line) => {
     if(line && line.toString().length > 0) {
       line = line.toString();
       
-      if(line == 'exit') // User typed 'exit'
-        return readInterface.close(); //close return
-      
-      var message = new PeerMessage({ messageType: PEER_MESSAGE_TYPES.update });
-      message.body = { 'data': line };
-      
-      if(canSend)
-        p.broadcast({ message });
-      else
-        queue.push(message);
+      if(line == 'exit') { // User typed 'exit'
+        readInterface.close(); //close return
+        process.exit(1);
+      } else if(line == 'peers') {
+        console.log(`\n\n${JSON.stringify(p.getPeerList())}\n\n`);
+      } else if(line == 'queue') {
+        console.log(`\n\n${JSON.stringify(queue)}\n\n`);
+      } else if(line == 'queue on') {
+        canSend = false;
+      } else if(line == 'queue off') {
+        canSend = true;
+      } else if(line == 'queue send' || line == 'send') {
+        // Send all the queued messages
+        while(queue.length > 0)
+          p.broadcast({ message: queue.splice(0,1)[0] });
+      } else {
+        var message = new PeerMessage({ messageType: PEER_MESSAGE_TYPES.update });
+        message.body = { 'data': line };
+        
+        if(isReady && canSend)
+          p.broadcast({ message });
+        else
+          queue.push(message);
+      }
     }
-    
-    //readInterface.prompt();
   });
 }
 

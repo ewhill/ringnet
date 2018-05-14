@@ -1,168 +1,39 @@
+$ node index.js -port=26781 -signature=peer1.signature -ring=ring.pub -private=peer1.pem -public=peer1.pub
 { port: '26781',
-  signature: 'peer1.signature',
-  ring: 'ring.pub',
+  signature: 'peer1.signature',                                                                                                                             ring: 'ring.pub',
   private: 'peer1.pem',
-  public: 'peer1.pub',
-  debug: true,
-  d: true }
-Checking for Ring Public Key at ring.pub
-Checking for Signature at peer1.signature
-Peer signature (last 50 bytes): 
-	SCkSQLWykJP5dvo6OBjQR7lc4okZRMLHtDbDed2jDsnw/05k76P4pi8AjtVGv4JWtds=
-Server listening on 26781
-New server connection...
-Peer.setupConnection() invoked
-Peer.setupConnection: new peer is undefined
-Peer.setupConnection: sending HELO to connection...
-Incoming message 'helo' from ::ffff:127.0.0.1
-	Got peer public key...
-		-> Signature: 9EYDzBk+4yz6R26fb/JgO5tdfwR4Fv8FzTgianNgJCtPNpTUdA2MQsWK6Az4gcreq5I=
-	keyIsSigned: true
-	Peer at ::ffff:127.0.0.1 is now TRUSTED.
-Incoming message 'trusted' from ::ffff:127.0.0.1
-Peer gave new known peer to discover: {"address":"127.0.0.1","signature":"U0ZqCw9n0pOOjki0txEVmvrBNpRim3EQHxrQjlHOP6KWp/dFEC8M7HAXKmhHcsQUX/ugDA1mH37S/dNRRgjBzWD08R6+q9iMap8crxWTGIGV6efWB2z+rdtWTrn0n3ZxQYiFGFd/Xx5bPqir+SNzjlnlW0FQCeHCQRVjgCQ31ZW0L7LsiBdnuaHVoENc11uUguznwpta1YV18pAT4JIbSfjuIQ5lTBxnTbE58kGyz5AJmNT95Z9G0M01ip+OYO+OF47+YpU7XpUrd/xSQkq44/rAtfBDah9wc9z/oQreKHKjb8jf/EB9FTsM8K4IKeWZrwNrGBEMYsQLlTV8tKcySWJ9uht3wMHzfn04edyTczHeK422DQW9aRKT1kmbb7n23Si+3kALxtHsjGZxmEw9LWneLKnKwIXIVoj3PkhKVSIxSYBNi8xbNQG88Ees3gh5Szm6TeAL8/eXEYZ6M2oX0rloXIy6wXXIy01WQ6ruOiiHJ30yLgafbeOrq+LWUaZ25VgdnqoGAzFtWO0yCcHky0oFQHRfWnCKcgTfCygpV+dLmcHUvFE5hcnWCj9oGIA2Y9uWq5CaeL2dJW0rscoxTdpmY6SSKTk9XuKwDoaZSCkSQLWykJP5dvo6OBjQR7lc4okZRMLHtDbDed2jDsnw/05k76P4pi8AjtVGv4JWtds="}
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: NpiU4uOIK6/h9puD79x9tw==
-PeerMessage {
-  header: 
+  public: 'peer1.pub' }
+Peer signature (last 50 bytes):
+        SCkSQLWykJP5dvo6OBjQR7lc4okZRMLHtDbDed2jDsnw/05k76P4pi8AjtVGv4JWtds=                                                                              NET> From Peer1, with love.                                                                                                                               PeerMessage {                                                                                                                                               header:                                                                                                                                                    { type: 2,
+     timestamp: '2018-05-14T03:52:03.342Z',                                                                                                                    hash: '',                                                                                                                                                 signature: { type: 'Buffer', data: [Array] } },                                                                                                        body: { data: 'From Peer2, with love.' } }                                                                                                              PeerMessage {
+  header:
    { type: 2,
-     timestamp: '2018-05-11T16:28:39.143Z',
-     hash: '48c5420c6ecdecaccd7082d1cd61c2ba308bd35cb3eacc87719de4d7b28ba474' },
-  body: { data: 'f%@k' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: W+dMYBo8qDSP5XqFxdoYUA==
+     timestamp: '2018-05-14T03:52:11.122Z',
+     hash: '',
+     signature: { type: 'Buffer', data: [Array] } },
+  body: { data: 'From Peer3, with love.' } }
 PeerMessage {
-  header: 
+  header:
    { type: 2,
-     timestamp: '2018-05-11T16:28:52.202Z',
-     hash: '476b9a271bf3fffee4c1eeaf353719f4a5437ccd4decc0a9a176dff6baf700f9' },
-  body: { data: 'test' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: WA96vxTtqrsH7vc6RV10Yip8YUeY/j6cxGLweQtZRHM=
+     timestamp: '2018-05-14T03:52:24.196Z',
+     hash: '',
+     signature: { type: 'Buffer', data: [Array] } },
+  body: { data: 'Testing' } }
 PeerMessage {
-  header: 
+  header:
    { type: 2,
-     timestamp: '2018-05-11T16:28:53.962Z',
-     hash: 'e1ae43e864fad75fafcf91851ce534bab0b42ef8399f27b0a67d3440ab019816' },
-  body: { data: 'testing' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: ySxTd03e7vl2MTygcwQmEw==
+     timestamp: '2018-05-14T03:52:27.510Z',                                                                                                                    hash: '',                                                                                                                                                 signature: { type: 'Buffer', data: [Array] } },                                                                                                        body: { data: 'the' } }                                                                                                                                 PeerMessage {
+  header:
+   { type: 2,
+     timestamp: '2018-05-14T03:52:54.920Z',
+     hash: '',
+     signature: { type: 'Buffer', data: [Array] } },
+  body: { data: 'message' } }
 PeerMessage {
-  header: 
+  header:
    { type: 2,
-     timestamp: '2018-05-11T16:28:56.211Z',
-     hash: '15bd892b2fb1a4ce076d47a241809c04d6b245fb8fbcb737548dd1c0fa2fbc0d' },
-  body: { data: 'now' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: VbaXd6bTc6MB/QfosjZKzQ==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:28:57.153Z',
-     hash: '627f5663a6a857ccc9672c40309b3841476ed75e1e09e6e89e9656842e791477' },
-  body: { data: 'this' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: Z3H4o89wpbK32j2Oa+9EEA==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:28:58.060Z',
-     hash: '0818d33c333fb38ae9aabc5abfd096d918c6e386134601517a25561b33907080' },
-  body: { data: 'is' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: UhNO0UzT/isXeuvFSSmt3Q==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:28:58.568Z',
-     hash: '4bfc09f1468f828e3004dec21714fa3677c8561add2c32b7a8ad86edfe01e577' },
-  body: { data: 'a' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: Om2Fy6LqK4odZXdRu53mtcZuPQvc818QP2mP2p7FqQo=
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:28:59.802Z',
-     hash: '7ec273d6bc355e7051cff8297de577eafdd63b74b8a157a0faeb8b7afc558eaa' },
-  body: { data: 'story' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: 6GfoWh7IoVpVqAqn4iGC7w==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:00.695Z',
-     hash: 'bd8187b326e3671e7f28f449b1f733109bbb25b76d6ff77b7b9b4a14aeba6057' },
-  body: { data: 'all' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: A7RfE2+JQ4qKsor6vwIz3YtM2/VDx+GK9rcCHreQc0Q=
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:01.681Z',
-     hash: '6aff7951659bf72cf90bd3527093666ab33b8a3bafef0ad69f807229b0ba1be6' },
-  body: { data: 'about' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: K45HoAVfWoky6DxBaHJz+A==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:02.414Z',
-     hash: '67f234e481891c5b9e2a6b87ceabb998296eadae1d6b24e15a6ce9df03e4a420' },
-  body: { data: 'how' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: AzxGq74/LwelE036g2+hPg==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:03.013Z',
-     hash: 'bd2014640845ba167fb375584e562d1cb54677730ce74d36b8cac1c967e7a887' },
-  body: { data: 'my' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: Tjsrq7rvxl5R4fkuO2S/Fw==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:03.962Z',
-     hash: 'd44bb7a5e29e0599d9cbdb4f5e9244adba7cfd83bc6c3159ea6490288d6de1c5' },
-  body: { data: 'life' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: eSIvEDoeAHpMRn9fek18Hw==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:04.909Z',
-     hash: 'e41324a94f3f0d714942d7e231cd7b3128ba32a28eb629d14817b4ec0f1f4956' },
-  body: { data: 'got' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: 9o8UODCjRk/wrcIm+E0rptIEZK8TIRWrP19BIP3xR1Y=
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:06.047Z',
-     hash: '839c2be8928ec85f926b89fe344a2fb258cc08631b0b02506da80c8e59c80251' },
-  body: { data: 'flipped' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: IPggMZZo4ZRPqqKQCxtiWBnrootr80iZA7fAp5i7zs4=
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:07.997Z',
-     hash: '755931a5b7d649ec16d5c340ba73885f57f93ff0aa5cf579652d4243891098d0' },
-  body: { data: 'turned' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: Ykrw5jfqXmVraE1NmgvHpdC3PNHCNQj0aDhnJrftwss=
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:09.496Z',
-     hash: '9fc8d5a3e764b47b1c5476f7992fecd86e04aad1ef8ed80f87cb182932c72d75' },
-  body: { data: 'upside' } }
-Incoming message 'update' from ::ffff:127.0.0.1
-Encrypted Message Body: RhfZmCm5mYafpAmV6kkdRQ==
-PeerMessage {
-  header: 
-   { type: 2,
-     timestamp: '2018-05-11T16:29:11.915Z',
-     hash: '75519cbcf159836581f2b75a07bdc62a27d0eb89ecd8b77fb30ecdd26db252b5' },
-  body: { data: 'down' } }
-Connection Closed
+     timestamp: '2018-05-14T03:52:59.776Z',
+     hash: '',
+     signature: { type: 'Buffer', data: [Array] } },
+  body: { data: 'bus.' } }
+NET> exit
