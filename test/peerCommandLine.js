@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require('fs');
+const dns = require('dns');
 const readline = require('readline');
 
 const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.js');
