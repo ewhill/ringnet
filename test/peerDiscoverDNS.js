@@ -58,6 +58,9 @@ return task
     }
   })
   .catch(e => {
+    if(typeof SEED_HOST == "string")
+      args.peers.push(SEED_HOST_URL.href);
+      
     console.error(e);
   })
   .then(() => {
