@@ -6,7 +6,33 @@ This package aims to create a secure, trusted network among decentralized peers,
 
 ### This package is in ALPHA development; you've been warned.
 
-### Testing On Local Machine:
+### Install
+```bash
+npm install ringnet
+```
+
+### Usage
+
+#### Include ringnet
+```js
+const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.js');
+```
+
+#### Creating a new peer
+```json
+let peer = new Peer({
+  port,           // (Defaults to process.env.DSCVRY_LISTEN || 26781)
+  addresses,      // (Defaults to [])
+  range,          // (Defaults to [26780, 26790])
+  debug,          // (Defaults to false)
+  publicKey,      // (Defaults to "peer.pub")
+  privateKey,     // (Defaults to "peer.pem")
+  ringPublicKey,  // (Defaults to "ring.pub")
+  signature       // (Defaults to "peer.signature")
+}
+```
+
+### Testing On Local Machine
 1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature
 
     ```bash
