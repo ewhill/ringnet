@@ -1,6 +1,6 @@
 {
   "name": "ringnet",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "A secure peer-to-peer network discovery module based on WebSockets using RSA and AES.",
   "main": "index.js",
   "scripts": {

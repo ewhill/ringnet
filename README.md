@@ -15,7 +15,7 @@ node peerSetup.js -o=first -b=2048
 2. Set up second peer:
 - Use peerSetup.js to generate second peer public / private key pair and signature
 ```
-node peerSetup.js -o=second -b=2048
+node peerSetup.js -o=second -b=2048 -ring=.ring.pem
 ```
 4. Start first peer (in background, logging stdout and stderr to `first.peer.log`):
 ```
@@ -23,7 +23,7 @@ $ node test/peerCommandLine.js -port=26781 -ring=.ring.pub -private=first.peer.p
 ```
 5. Start second peer (in foreground, with user interaction):
 ```
-$ node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=ring.pub -private=second.peer.pem -public=second.peer.pub -signature=second.peer.signature -v
+$ node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -private=second.peer.pem -public=second.peer.pub -signature=second.peer.signature -v
 ```
 6. Once the peer-to-peer network has been established (post-HELO handshake), messages from one peer can be sent out to all other peers in the network securely, just as in a typical client-server scenario. The catch? Decentralization. Every peer is a server and every peer is a client. There is no central management.
 7. Type some text into terminal/prompt while the second peer is running and hit enter.
