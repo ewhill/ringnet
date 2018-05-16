@@ -19,7 +19,7 @@ const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.j
 ```
 
 #### Creating a new peer
-```json
+```js
 let peer = new Peer({
   port,           // (Defaults to process.env.DSCVRY_LISTEN || 26781)
   addresses,      // (Defaults to [])
