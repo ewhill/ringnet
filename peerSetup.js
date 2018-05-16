@@ -78,7 +78,7 @@ if(args.h || args.help) {
 }
 
 // A little bit of setup required...
-let fileName = args.o || args.out,
+let fileName = args.o || args.out || "",
   createdRing = false, createdPeer = false,
   ringPrivate = false, ringPublic = false,
   peerPrivate = false, peerPublic = false,
@@ -96,7 +96,7 @@ if(args.ring && Array.isArray(args.ring)) {
     ringPrivate = new NodeRSA(fs.readFileSync(args.ring[0]));
     ringPublic = new NodeRSA(fs.readFileSync(args.ring[1]));
   } else if(args.ring.length == 1) {
-    ringPrivate = new NodeRSA(args.ring[0]);
+    ringPrivate = new NodeRSA(fs.readFileSync(args.ring[0]));
     ringPublic = new NodeRSA(ringPrivate.exportKey("public"));
   }
 } else {
@@ -115,7 +115,7 @@ if(args.peer && Array.isArray(args.peer)) {
     peerPublic = new NodeRSA(fs.readFileSync(args.peer[1]));
   } else if(args.peer.length == 1) {
     // Given ONLY private key
-    peerPrivate = new NodeRSA(args.peer[0]);
+    peerPrivate = new NodeRSA(fs.readFileSync(args.peer[0]));
     // Generate public from private
     peerPublic = new NodeRSA(peerPrivate.exportKey("public"));
   }
@@ -135,10 +135,10 @@ debug(`\t${fileName}.peer.signature`);
 if(createdRing) {
   // Write our ring key pair to file system
   debug(`Writing ring keys to file system...`);
-  fs.writeFileSync(fileName + ".ring.pem", ringPrivate.exportKey('private'));
-  debug(`\t${fileName}.ring.pem`);
+  fs.writeFileSync(".ring.pem", ringPrivate.exportKey('private'));
+  debug(`\t.ring.pem`);
   fs.writeFileSync(fileName + ".ring.pub", ringPublic.exportKey('public'));
-  debug(`\t${fileName}.ring.pub`);
+  debug(`\t.ring.pub`);
 }
 
 if(createdPeer) {
