@@ -6,7 +6,7 @@ This package aims to create a secure, trusted network among decentralized peers,
 
 ### This package is in ALPHA development; you've been warned.
 
-### Testing:
+### Testing On Local Machine:
 1. Set up initial peer:
 - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature
 ```
