@@ -32,6 +32,36 @@ let peer = new Peer({
 }
 ```
 
+#### Setting up the event handlers
+```js
+peer.on('ready', () => {
+  /* Underyling HTTP Server is ready */
+});
+
+peer.on('connection', ({connection, request }) => {
+  /* A new connection has been made to the WebSocket server */
+});
+
+peer.on('message', () => ({ message, connection }) => {
+  /* A message has been received by the WebSocket server */
+});
+
+peer.on('discovering', () => {
+  /* The peer is discovering based on it's list of known or potential peers */
+});
+
+peer.on('discovered', () => {
+  /* The peer is done discovering */
+});
+```
+
+#### Creating and Sending Messages
+```js
+var message = new PeerMessage({ messageType: PeerMessage.PEER_MESSAGE_TYPES.update });
+message.body = { 'someProperty': someValue };
+p.broadcast({ message });
+```
+
 ### Testing On Local Machine
 1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature
 
