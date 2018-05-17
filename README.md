@@ -20,16 +20,16 @@ const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.j
 
 #### Creating a new peer
 ```js
-let peer = new Peer({
-  port,           // (Defaults to process.env.DSCVRY_LISTEN || 26781)
-  addresses,      // (Defaults to [])
-  range,          // (Defaults to [26780, 26790])
-  debug,          // (Defaults to false)
-  publicKey,      // (Defaults to "peer.pub")
-  privateKey,     // (Defaults to "peer.pem")
-  ringPublicKey,  // (Defaults to "ring.pub")
-  signature       // (Defaults to "peer.signature")
-}
+var peer = new Peer({
+  'port': 26780                             // (Defaults to process.env.DSCVRY_LISTEN || 26781)
+  'addresses': [ "127.0.0.1:26781" ],       // (Defaults to [])
+  'range': [ 26780, 26800 ],                // (Defaults to [26780, 26790])
+  'debug': true,                            // (Defaults to false)
+  'ringPublicKey': "myRingPulicKey.pub",    // (Defaults to "ring.pub")
+  'publicKey': "myPeerPublicKey.pub",       // (Defaults to "peer.pub")
+  'privateKey': "myPeerPrivateKey.pem",     // (Defaults to "peer.pem")
+  'signature': "myPeerSignature.signature"  // (Defaults to "peer.signature")
+});
 ```
 
 #### Setting up the event handlers
