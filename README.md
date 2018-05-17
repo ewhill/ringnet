@@ -59,10 +59,14 @@ peer.on('discovered', () => {
 ```js
 // Create a new PeerMessage object with header type of 'update'
 // (See PeerMessage.PEER_MESSAGE_TYPES object for additional message types or to add your own)
-var message = new PeerMessage({ messageType: PeerMessage.PEER_MESSAGE_TYPES.update });
+var message = new PeerMessage({
+  'messageType': PeerMessage.PEER_MESSAGE_TYPES.update
+});
 
 // Set the message's body to an object
-message.body = { 'someProperty': someValue };
+message.body = {
+  'someProperty': someValue
+};
 
 // Broadcast the message to all connected, verified peers
 peer.broadcast({ message });
