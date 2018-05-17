@@ -15,7 +15,7 @@ npm install ringnet
 
 #### Include ringnet
 ```js
-const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.js');
+const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('ringnet');
 ```
 
 #### Creating a new peer
