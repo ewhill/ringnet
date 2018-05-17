@@ -77,8 +77,10 @@ if(!args.d || args.d.length < 1) {
         while(queue.length > 0)
           p.broadcast({ message: queue.splice(0,1)[0] });
       } else {
-        var message = new PeerMessage({ messageType: PeerMessage.PEER_MESSAGE_TYPES.update });
-        message.body = { 'data': line };
+        var message = new PeerMessage({
+          type: PeerMessage.PEER_MESSAGE_TYPES.update,
+          body: { 'data': line  }
+        });
         
         if(isReady && canSend)
           p.broadcast({ message });

@@ -137,7 +137,7 @@ if(createdRing) {
   debug(`Writing ring keys to file system...`);
   fs.writeFileSync(".ring.pem", ringPrivate.exportKey('private'));
   debug(`\t.ring.pem`);
-  fs.writeFileSync(fileName + ".ring.pub", ringPublic.exportKey('public'));
+  fs.writeFileSync(".ring.pub", ringPublic.exportKey('public'));
   debug(`\t.ring.pub`);
 }
 

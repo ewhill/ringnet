@@ -1,6 +1,6 @@
 # ringnet
 
-## A secure peer-to-peer networking module based on WebSockets using RSA and AES.
+## A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.
 
 This package aims to create a secure, trusted network among decentralized peers, and make the aforementioned easy to setup and use right out-of-the-box.
 
@@ -38,8 +38,12 @@ peer.on('ready', () => {
   /* Underyling HTTP Server is ready */
 });
 
-peer.on('connection', ({connection, request }) => {
-  /* A new connection has been made to the WebSocket server */
+peer.on('request', ({connection, request }) => {
+  /* A new request has been received by the WebSocket server */
+});
+
+peer.on('connection', ({connection }) => {
+  /* A new VERIFIED AND TRUSTED connection has been made */
 });
 
 peer.on('message', () => ({ message, connection }) => {
@@ -57,16 +61,14 @@ peer.on('discovered', () => {
 
 #### Creating and Sending Messages
 ```js
-// Create a new PeerMessage object with header type of 'update'
+// Create a new PeerMessage object with header type of 'update' and an object for its body.
 // (See PeerMessage.PEER_MESSAGE_TYPES object for additional message types or to add your own)
 var message = new PeerMessage({
-  'messageType': PeerMessage.PEER_MESSAGE_TYPES.update
+  'type': PeerMessage.PEER_MESSAGE_TYPES.update,
+  'body': {
+    'someProperty': someValue
+  }.
 });
-
-// Set the message's body to an object
-message.body = {
-  'someProperty': someValue
-};
 
 // Broadcast the message to all connected, verified peers
 peer.broadcast({ message });
