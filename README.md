@@ -23,12 +23,13 @@ const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('ringnet');
 var peer = new Peer({
   'port': 26780                             // (Defaults to process.env.DSCVRY_LISTEN || 26781)
   'addresses': [ "127.0.0.1:26781" ],       // (Defaults to [])
-  'range': [ 26780, 26800 ],                // (Defaults to [26780, 26790])
-  'debug': true,                            // (Defaults to false)
+  'range': [ 26780, 27900 ],                // (Defaults to [26780, 26790])
+  'startDiscovery': true,                   // (Defaults to true)
   'ringPublicKey': "myRingPulicKey.pub",    // (Defaults to "ring.pub")
   'publicKey': "myPeerPublicKey.pub",       // (Defaults to "peer.pub")
   'privateKey': "myPeerPrivateKey.pem",     // (Defaults to "peer.pem")
-  'signature': "myPeerSignature.signature"  // (Defaults to "peer.signature")
+  'signature': "myPeerSignature.signature", // (Defaults to "peer.signature")
+  'debug': true,                            // (Defaults to false)
 });
 ```
 
@@ -67,7 +68,7 @@ var message = new PeerMessage({
   'type': PeerMessage.PEER_MESSAGE_TYPES.update,
   'body': {
     'someProperty': someValue
-  }.
+  }
 });
 
 // Broadcast the message to all connected, verified peers

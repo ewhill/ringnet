@@ -4,7 +4,7 @@
   "description": "A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No test specified.\" && exit",
+    "test": "tape 'test/test*.js'",
     "peer1": "node test/peerCommandLine.js -port=26781 -ring=ring.pub -signature=peer1.signature -private=peer1.pem -public=peer1.pub",
     "peer2": "node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=ring.pub -signature=peer2.signature -private=peer2.pem -public=peer2.pub",
     "peer3": "node test/peerCommandLine.js -port=26783 -peers=127.0.0.1:26782 -ring=ring.pub -signature=peer3.signature -private=peer3.pem -public=peer3.pub"
@@ -28,5 +28,8 @@
   "dependencies": {
     "node-rsa": "^0.4.2",
     "websocket": "^1.0.26"
+  },
+  "devDependencies": {
+    "tape": "^4.9.0"
   }
 }
