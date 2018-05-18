@@ -1,6 +1,7 @@
 {
   "name": "ringnet",
-  "version": "0.2.13",
+  "version": "0.2.12",
+  "homepage": "https://github.com/ewhill/ringnet",
   "description": "A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.",
   "main": "index.js",
   "scripts": {
@@ -24,6 +25,10 @@
     "aes-256-cbc"
   ],
   "author": "Eric Hill",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ewhill/ringnet"
+  },
   "license": "MIT",
   "dependencies": {
     "node-rsa": "^0.4.2",
