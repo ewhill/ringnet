@@ -45,9 +45,10 @@ var peer = new Peer(options);
   - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
 - **privateKey** (string)
   - ```diff
-+ 
-- Required
-```, defaults to `peer.pem`
+  - + 
+  - - Required
+  - ```
+  - , defaults to `peer.pem`
   - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
 - **signature** (string)
   - *_Required_*, defaults to `peer.signature`
