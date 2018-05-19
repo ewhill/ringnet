@@ -24,6 +24,18 @@ var peer = new Peer(options);
 ```
 
 ##### Constructor Options
+- **ringPublicKey** (string)
+  - **_Required_**, defaults to `ring.pub`
+  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
+- **publicKey** (string)
+  - **_Required_**, defaults to `peer.pub`
+  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
+- **privateKey** (string)
+  - **_Required_**, defaults to `peer.pem`
+  - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
+- **signature** (string)
+  - **_Required_**, defaults to `peer.signature`
+  - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
 - **port** (integer)
   - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`)
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
@@ -37,18 +49,6 @@ var peer = new Peer(options);
   - *Optional*, defaults to true
   - If set to true, the peer will automatically start the discovery process after creation and initialization
   - If set to false, the peer will not automatically start the discovery process
-- **ringPublicKey** (string)
-  - **_Required_**, defaults to `ring.pub`
-  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
-- **publicKey** (string)
-  - **_Required_**, defaults to `peer.pub`
-  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
-- **privateKey** (string)
-  - **_Required_**, defaults to `peer.pem`
-  - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
-- **signature** (string)
-  - **_Required_**, defaults to `peer.signature`
-  - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
 - **debug** (boolean)
   - *Optional*, defaults to false
   - The debug flag, if set to true, will output useful diagnostic information about the peer.
