@@ -40,7 +40,7 @@ var peer = new Peer(options);
   - Required, defaults to `ring.pub`
   - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
 - publicKey
-  - Required, defaults to `peer.pub`.
+  - Required, defaults to `peer.pub`
   - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
 - privateKey
   - Required, defaults to `peer.pem`
