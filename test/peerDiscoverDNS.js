@@ -68,13 +68,13 @@ return task
     
     var p = new Peer({
       'port': args.port,
-      'addresses': args.peers,
-      'debug': args.debug || args.v || args.verbose,
+      'discoveryAddresses': args.peers,
+      'discoveryRange': args.range,
+      'ringPublicKey': args.ring,
       'publicKey': args.public,
       'privateKey': args.private,
-      'ringPublicKey': args.ring,
       'signature': args.signature,
-      'range': args.range
+      'debug': args.debug || args.v || args.verbose
     });
     
     // ----------------------------------------------------------------------------------

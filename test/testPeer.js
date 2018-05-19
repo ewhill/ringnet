@@ -143,7 +143,7 @@ let peer1 = new Peer({
 // Create the second peer, peer2, listening on 26781
 let peer2 = new Peer({
   'port': 26781,
-  'addresses': [ "127.0.0.1:26780" ],
+  'discoveryAddresses': [ "127.0.0.1:26780" ],
   'signature': "second.peer.signature",
   'publicKey': "second.peer.pub",
   'privateKey': "second.peer.pem",

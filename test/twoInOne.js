@@ -68,7 +68,7 @@ peer1.on('message', ({ message, connection }) => {
 peer1.on('ready', () => {
   let peer2 = new Peer({
     'port': 26781,
-    'addresses': [ "127.0.0.1:26780" ],
+    'discoveryAddresses': [ "127.0.0.1:26780" ],
     'signature': "second.peer.signature",
     'publicKey': "second.peer.pub",
     'privateKey': "second.peer.pem",

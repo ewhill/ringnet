@@ -20,16 +20,50 @@ const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('ringnet');
 
 #### Creating a new peer
 ```js
+var peer = new Peer(options);
+```
+
+##### Constructor Options
+- port
+  - Optional, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`)
+  - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
+- discoveryAddresses
+  - Optional, defaults to empty array `[]`
+  - The addresses with or without accompanying ports of peers that the created peer will try to connect to after intialization
+- discoveryRange (array, length=2)
+  - Optional, defaults to `[26780, 26790]`
+  - If a member of `discoveryAddresses` does not contain a port, the peer will sequentially try connect to said entry using this range of ports (inclusive). The first index of this array should be the starting port and the second and last index of this array should be the ending port
+- startDiscovery (boolean)
+  - If set to true, the peer will automatically start the discovery process after creation and initialization
+  - If set to false, the peer will not automatically start the discovery process
+- ringPublicKey
+  - Required, defaults to `ring.pub`
+  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
+- publicKey
+  - Required, defaults to `peer.pub`.
+  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
+- privateKey
+  - Required, defaults to `peer.pem`
+  - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
+- signature
+  - Required, defaults to `peer.signature`
+  - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
+- debug
+  - Optional, defaults to false
+  - The debug flag, if set to true, will output useful diagnostic information about the peer.
+
+##### Peer Constructor Example
+```js
 var peer = new Peer({
-  'port': 26780                             // (Defaults to process.env.DSCVRY_LISTEN || 26781)
-  'addresses': [ "127.0.0.1:26781" ],       // (Defaults to [])
-  'range': [ 26780, 27900 ],                // (Defaults to [26780, 26790])
-  'startDiscovery': true,                   // (Defaults to true)
-  'ringPublicKey': "myRingPulicKey.pub",    // (Defaults to "ring.pub")
-  'publicKey': "myPeerPublicKey.pub",       // (Defaults to "peer.pub")
-  'privateKey': "myPeerPrivateKey.pem",     // (Defaults to "peer.pem")
-  'signature': "myPeerSignature.signature", // (Defaults to "peer.signature")
-  'debug': true,                            // (Defaults to false)
+  'port': 26780,
+  'discoveryAddresses': [ "127.0.0.1:26781" ],
+  'discoveryRange': [ 26780, 27900 ],
+  'startDiscovery': true,
+  'ringPublicKey': "myRingPulicKey.pub",
+  'publicKey': "myPeerPublicKey.pub",
+  'privateKey': "myPeerPrivateKey.pem",
+  'signature': "myPeerSignature.signature",
+  'debug': true,
 });
 ```
 

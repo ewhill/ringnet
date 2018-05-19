@@ -23,7 +23,7 @@ var DSCVRY_SAVEFILE = args.save || `${Date.now()}.json`;
 
 var p = new Peer({
   'port': args.port,
-  'addresses': args.peers,
+  'discoveryAddresses': args.peers,
   'debug': args.debug || args.v || args.verbose,
   'publicKey': args.public,
   'privateKey': args.private,
