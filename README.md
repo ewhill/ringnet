@@ -55,6 +55,16 @@ var peer = new Peer(options);
 
 ##### Peer Constructor Example
 ```js
+/*
+  Create a peer, `peer`, using `myRingPulicKey.pub`, `myPeerPublicKey.pub`, 
+  `myPeerPublicKey.pem`, and `myPeerSignature` files, that listens on port 
+  `26780` and will attempt to discover the address `127.0.0.1:26781` via 
+  autodiscovery (`startDiscovery`), post-creation. This peer will, if given 
+  an IP to discover with no port, scan ports 26780-26790 (inclusive) against 
+  the IP in order to attempt to establish a secure connection with said IP. 
+  This peer will also output diagnostics (`debug`).
+*/
+
 var peer = new Peer({
   'ringPublicKey': "myRingPulicKey.pub",
   'publicKey': "myPeerPublicKey.pub",
