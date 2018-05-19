@@ -56,14 +56,14 @@ var peer = new Peer(options);
 ##### Peer Constructor Example
 ```js
 var peer = new Peer({
-  'port': 26780,
-  'discoveryAddresses': [ "127.0.0.1:26781" ],
-  'discoveryRange': [ 26780, 27900 ],
-  'startDiscovery': true,
   'ringPublicKey': "myRingPulicKey.pub",
   'publicKey': "myPeerPublicKey.pub",
   'privateKey': "myPeerPrivateKey.pem",
   'signature': "myPeerSignature.signature",
+  'port': 26780,
+  'discoveryAddresses': [ "127.0.0.1:26781" ],
+  'discoveryRange': [ 26780, 27900 ],
+  'startDiscovery': true,
   'debug': true,
 });
 ```
