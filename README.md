@@ -37,7 +37,7 @@ var peer = new Peer(options);
   - **_Required_**, defaults to `peer.signature`
   - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
 - **port** (integer)
-  - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`)
+  - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
 - **discoveryAddresses** (array)
   - *Optional*, defaults to empty array `[]`
