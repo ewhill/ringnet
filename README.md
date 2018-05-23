@@ -130,7 +130,7 @@ peer.broadcast({ message });
 ### Testing On Local Machine
 0. Generate or bring-your-own HTTPS server certificates
     ```bash
-    $ openssl genrsa -out https.key.pem 2048`
+    $ openssl genrsa -out https.key.pem 2048
     $ openssl req -new -key https.key.pem -out https.csr.pem
     $ openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem
     ```
