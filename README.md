@@ -1,6 +1,6 @@
 # ringnet
 
-## A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.
+## A secure peer-to-peer networking NodeJS module based on HTTPS WebSockets using RSA and AES.
 
 This package aims to create a secure, trusted network among decentralized peers, and make the aforementioned easy to setup and use right out-of-the-box.
 
@@ -36,6 +36,9 @@ var peer = new Peer(options);
 - **signature** (string)
   - **_Required_**, defaults to `peer.signature`
   - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
+- **credentials** (object)
+  - *Optional*, defaults to `{'key: "https.key.pem", 'cert': "https.cert.pem"}`.
+  - If provided, the peer will use the key (`credentials.key`) and cert (`credentials.cert`) properties for creation of the https server in which to listen for incomming `wss` (secure) connections. Previously an insecure http server was used for peer-to-peer communcation and has since been deprecated. The peer *must* have valid https key and certificate in order to run. Self-signed certificates are acceptable for use.
 - **port** (integer)
   - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
@@ -51,7 +54,7 @@ var peer = new Peer(options);
   - If set to false, the peer will not automatically start the discovery process
 - **debug** (boolean)
   - *Optional*, defaults to false
-  - The debug flag, if set to true, will output useful diagnostic information about the peer.
+  - If set to true, the peer will output useful diagnostic information to `stdout` while running
 
 ##### Peer Constructor Example
 ```js
@@ -66,6 +69,10 @@ var peer = new Peer(options);
 */
 
 var peer = new Peer({
+  'credentials': {
+    'key': "myHttpsServer.key.pem",
+    'cert': "myHttpsServer.cert.pem"
+  },
   'ringPublicKey': "myRingPulicKey.pub",
   'publicKey': "myPeerPublicKey.pub",
   'privateKey': "myPeerPrivateKey.pem",
@@ -121,6 +128,12 @@ peer.broadcast({ message });
 ```
 
 ### Testing On Local Machine
+0. Generate or bring-your-own HTTPS server certificates
+    ```bash
+    $ openssl genrsa -out https.key.pem 2048`
+    $ openssl req -new -key https.key.pem -out https.csr.pem
+    $ openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem
+    ```
 1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature
 
     ```bash
