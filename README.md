@@ -128,19 +128,19 @@ peer.broadcast({ message });
 ```
 
 ### Testing On Local Machine
-0. Generate or bring-your-own HTTPS server certificates
+0. Generate or bring-your-own HTTPS server key and certificate:
     ```bash
     $ openssl genrsa -out https.key.pem 2048
     $ openssl req -new -key https.key.pem -out https.csr.pem
     $ openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem
     ```
-1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature
+1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature:
 
     ```bash
     $ node peerSetup.js -o=first -b=2048
     ```
 
-2. Set up second peer - Use peerSetup.js to generate second peer public / private key pair and signature
+2. Set up second peer - Use peerSetup.js to generate second peer public / private key pair and signature:
 
     ```bash
     $ node peerSetup.js -o=second -b=2048 -ring=.ring.pem
