@@ -6,3 +6,5 @@ package-lock.json
 *.signature
 *.log
 *.txt
+.imdone
+.imdone/*
