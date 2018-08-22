@@ -14,7 +14,9 @@ const args = (new Expectation({
     'public': "", // optional (defaults to peer.pub)
     'signature': "", // required (peer won't start without)
     'd': "", // optional
-    'range': [","] // optional (defaults to [26780,26790])
+    'range': [","], // optional (defaults to [26780,26790])
+    'requireConfirmation': "",
+    'rc': ""
   })).args;
 
 console.log(args);
@@ -29,7 +31,8 @@ var p = new Peer({
   'privateKey': args.private,
   'ringPublicKey': args.ring,
   'signature': args.signature,
-  'range': args.range
+  'range': args.range,
+  'requireConfirmation': args.requireConfirmation || args.rc
 });
 
 // ----------------------------------------------------------------------------------

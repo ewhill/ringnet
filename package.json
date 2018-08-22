@@ -6,9 +6,10 @@
   "main": "index.js",
   "scripts": {
     "test": "tape 'test/test*.js'",
-    "peer1": "node test/peerCommandLine.js -port=26781 -ring=ring.pub -signature=peer1.signature -private=peer1.pem -public=peer1.pub",
-    "peer2": "node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=ring.pub -signature=peer2.signature -private=peer2.pem -public=peer2.pub",
-    "peer3": "node test/peerCommandLine.js -port=26783 -peers=127.0.0.1:26782 -ring=ring.pub -signature=peer3.signature -private=peer3.pem -public=peer3.pub"
+    "setup": "openssl genrsa -out https.key.pem 2048 && openssl req -new -key https.key.pem -out https.csr.pem && openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem && node peerSetup.js -o=first -b=2048 && node peerSetup.js -o=second -b=2048 -ring=.ring.pem && node peerSetup.js -o=third -b=2048 -ring=.ring.pem",
+    "peer1": "node test/peerCommandLine.js -port=26781 -ring=.ring.pub -signature=first.peer.signature -private=first.peer.pem -public=first.peer.pub -v",
+    "peer2": "node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -signature=second.peer.signature -private=second.peer.pem -public=second.peer.pub -v",
+    "peer3": "node test/peerCommandLine.js -port=26783 -peers=127.0.0.1:26782 -ring=.ring.pub -signature=third.peer.signature -private=third.peer.pem -public=third.peer.pub -v"
   },
   "keywords": [
     "peer-to-peer",
