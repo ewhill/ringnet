@@ -1,6 +1,10 @@
+.imdone
+.imdone/*
 node_modules/*
 node_modules
+package-lock.json
 *.pem
 *.pub
 *.signature
-package-lock.json
+*.log
+*.txt
