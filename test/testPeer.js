@@ -43,7 +43,7 @@ var tests = [{
     'receive': ({ message, connection }, assert, next) => {
       // Make sure the header is what we sent
       assert.equal(message.header.type, PeerMessage.PEER_MESSAGE_TYPES.update, 
-        "Message header tpye sent by peer2 and received by peer1 should be equal.");
+        "Message header type sent by peer2 and received by peer1 should be equal.");
         
       // Make sure the body is what we sent
       assert.equal(message.body, "Hello, from peer2!!!", 
@@ -90,14 +90,14 @@ var tests = [{
         for(let i=0; i<connection._received.length; i++) {
           assert.equal(i, connection._received[i], 
             `Received message at index ${i} should be ${i}, ` +
-            `but instead is ${connection._received[i]}!`);
+            `and is ${connection._received[i]}!`);
           if(i !== connection._received[i]) {
             inOrder = false;
           }
         }
         
         assert.ok(inOrder, 
-          "peer2 received 5 messages in incorrect order as sent by peer1.");
+          "peer2 received 5 messages in correct order as sent by peer1.");
         
         next();
       }
