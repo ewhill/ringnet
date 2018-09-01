@@ -23,6 +23,13 @@ console.log(args);
 
 var DSCVRY_SAVEFILE = args.save || `${Date.now()}.json`;
 
+var readInterface = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+readInterface.setPrompt('NET> ');
+
 var p = new Peer({
   'port': args.port,
   'discoveryAddresses': args.peers,
@@ -48,16 +55,15 @@ p.on('ready', () => {
 p.on('message', ({ message, connection }) => {
   // TODO: Do something with the message (Update DB, Blockchain, etc...)
   console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
+  readInterface.prompt();
 });
 
 if(!args.d || args.d.length < 1) {
   var queue = [];
   var canSend = true;
   
-  var readInterface = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: 'NET> '
+  p.on('discovered', () => {
+    readInterface.prompt();
   });
 
   readInterface.on('line', (line) => {
@@ -79,6 +85,8 @@ if(!args.d || args.d.length < 1) {
         // Send all the queued messages
         while(queue.length > 0)
           p.broadcast({ message: queue.splice(0,1)[0] });
+      } else if(line == 'toString()') {
+        console.log(p.toString());
       } else {
         var message = new PeerMessage({
           type: PeerMessage.PEER_MESSAGE_TYPES.update,
@@ -91,6 +99,8 @@ if(!args.d || args.d.length < 1) {
           queue.push(message);
       }
     }
+    
+    readInterface.prompt();
   });
 }
 
@@ -98,25 +108,3 @@ if(!args.d || args.d.length < 1) {
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
-
-
-//////////////////////////////////////
-// Take care of a clean exit below //
-////////////////////////////////////
-// function save(eventType) {
-//   console.log(`Exiting as a result of '${eventType}'`);
-  
-//   // if(!p.saved) {
-//   //   fs.writeFile(Date.now() + ".json", new Buffer(p.toString(), 'utf8'), () => {
-//   //     p.saved = true;
-//   //     process.exit(1);
-//   //   });
-//   // }
-  
-//   process.exit(1);
-// }
-
-// [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`]
-//   .forEach((eventType) => {
-//     process.on(eventType, save.bind(null, eventType));
-//   });
