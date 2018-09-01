@@ -79,6 +79,8 @@ if(!args.d || args.d.length < 1) {
         // Send all the queued messages
         while(queue.length > 0)
           p.broadcast({ message: queue.splice(0,1)[0] });
+      } else if(line == 'toString()') {
+        console.log(p.toString());
       } else {
         var message = new PeerMessage({
           type: PeerMessage.PEER_MESSAGE_TYPES.update,
