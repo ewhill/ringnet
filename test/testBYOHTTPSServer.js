@@ -30,7 +30,7 @@ test("PeerBYOServerTest", (assert) => {
       'publicKey': "first.peer.pub",
       'privateKey': "first.peer.pem",
       'ringPublicKey': ".ring.pub",
-      'debug': true,
+      'debug': false,
       'discoveryRange': [26780, 26790],
       'startDiscovery': true,
       'requireConfirmation': true
