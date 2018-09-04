@@ -36,9 +36,13 @@ var peer = new Peer(options);
 - **signature** (string)
   - **_Required_**, defaults to `peer.signature`
   - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
+- **httpsServer** (object)
+  - *Optional*, defaults to `false`.
+  - If provided, the peer will use the given HTTPS Server for creation of the underyling WebSocket server.
 - **credentials** (object)
   - *Optional*, defaults to `{'key: "https.key.pem", 'cert': "https.cert.pem"}`.
   - If provided, the peer will use the key (`credentials.key`) and cert (`credentials.cert`) properties for creation of the https server in which to listen for incomming `wss` (secure) connections. Previously an insecure http server was used for peer-to-peer communcation and has since been deprecated. The peer *must* have valid https key and certificate in order to run. Self-signed certificates are acceptable for use.
+  - NOTE: If the `httpsServer` is provided, and is a valid HTTPS server instance, this option, `credentials`, will be ignored.
 - **port** (integer)
   - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
