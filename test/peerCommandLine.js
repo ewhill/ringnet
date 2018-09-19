@@ -7,6 +7,7 @@ const readline = require('readline');
 const { Peer, PeerMessage, PeerMessageQueue, Expectation } = require('../index.js');
 
 const args = (new Expectation({
+    'publicAddress': "", //optional (defaults to false)
     'port': "", // optional (defaults to 26781)
     'peers': [","], // optional (defaults to [])
     'ring': "", // required (defaults to ring.pub)
@@ -32,6 +33,7 @@ readInterface.setPrompt('NET> ');
 
 var p = new Peer({
   'port': args.port,
+  'publicAddress': args.publicAddress,
   'discoveryAddresses': args.peers,
   'debug': args.debug || args.v || args.verbose,
   'publicKey': args.public,
