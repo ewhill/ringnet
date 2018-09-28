@@ -49,6 +49,9 @@ var peer = new Peer(options);
 - **discoveryAddresses** (array)
   - *Optional*, defaults to empty array `[]`
   - The addresses with or without accompanying ports of peers that the created peer will try to connect to after intialization
+- **publicAddress** (array)
+  - *Optional*, defaults to `false`.
+  - The addresses that will be used to tell other peers where they can find us when new peers connect to them. This address should be a publicly accessible FQDN or IP address that will resolve to this instantiated peer.
 - **discoveryRange** (array, length=2)
   - *Optional*, defaults to `[26780, 26790]`
   - If a member of `discoveryAddresses` does not contain a port, the peer will sequentially try connect to said entry using this range of ports (inclusive). The first index of this array should be the starting port and the second and last index of this array should be the ending port
@@ -118,6 +121,17 @@ peer.on('discovering', () => {
 peer.on('discovered', () => {
   /* The peer is done discovering */
 });
+
+peer.on('your_custom_message_header_type', () => {
+  /*
+    The peer has received a message of "unknown" (custom) type and emits the 
+    message header's 'type' property.
+    
+    NOTE:
+      These "unknown" (custom) events are only emitted if the message header's 'type' 
+      property is a string.
+  */
+});
 ```
 
 #### Creating and Sending Messages
@@ -135,39 +149,46 @@ var message = new PeerMessage({
 peer.broadcast({ message });
 ```
 
+#### Creating and Sending Custom Messages
+```js
+// Create a new PeerMessage object with header type of 'blahblahblah' and an object for its body.
+var message = new PeerMessage({
+  'type': "blahblahblah",
+  'body': {
+    'someProperty': someValue
+  }
+});
+
+// Broadcast the message to all connected, verified peers
+peer.broadcast({ message });
+```
+
+#### Listening for Custom Messages
+```js
+peer.on("blahblahblah", ({ message, connection }) => {
+  // Do something here
+});
+```
+
 ### Testing On Local Machine
-0. Generate or bring-your-own HTTPS server key and certificate:
+1. Generate or bring-your-own HTTPS server key and certificate:
     ```bash
-    $ openssl genrsa -out https.key.pem 2048
-    $ openssl req -new -key https.key.pem -out https.csr.pem
-    $ openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem
+    $ npm run setup
     ```
-1. Set up initial peer - Use peerSetup.js to generate ring public / private key pair and peer1 public/private key pair and signature:
-
-    ```bash
-    $ node peerSetup.js -o=first -b=2048
-    ```
-
-2. Set up second peer - Use peerSetup.js to generate second peer public / private key pair and signature:
-
-    ```bash
-    $ node peerSetup.js -o=second -b=2048 -ring=.ring.pem
-    ```
-
-4. Start first peer (in background, logging stdout and stderr to `first.peer.log`):
+2. In a terminal window, start the first peer (peer1):
     
     ```bash
-    $ node test/peerCommandLine.js -port=26781 -ring=.ring.pub -private=first.peer.pem -public=first.peer.pub -signature=first.peer.signature -v -d > "first.peer.log" 2>&1 &
+    $ npm run peer1
     ```
     
-5. Start second peer (in foreground, with user interaction):
+3. In a second terminal window, start the second peer (peer2):
     
     ```bash
-    $ node test/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -private=second.peer.pem -public=second.peer.pub -signature=second.peer.signature -v
+    $ npm run peer2
     ```
     
-6. Once the peer-to-peer network has been established (post-HELO handshake), messages from one peer can be sent out to all other peers in the network securely, just as in a typical client-server scenario. The catch? Decentralization. Every peer is a server and every peer is a client. There is no central management.
-7. Type some text into terminal/prompt while the second peer is running and hit enter. The second peer will send the message securely to the first peer, as the peers have established trust in the decentralized network.
-8. Quit (`Ctrl^C` or type `exit` and hit enter) on the second peer to quit the second peer.
-9. Verify the encrypted message sent by the second peer made it to the first peer by opening `first.peer.log`. The last few lines will now reflect the message sent by the second peer to the first peer and received by the first peer from the second peer.
-10. Quit (`kill -9 <pidOfFirstPeer>`) the second peer, as it is still running in the background.
+4. Once the peer-to-peer network has been established (post-HELO handshake), messages from one peer can be sent out to all other peers in the network securely, just as in a typical client-server scenario, but in a decentralized fashion. Every peer is a server and every peer is a client. There is no central management.
+5. Type some text into terminal/prompt while the second peer (peer2) is running and hit enter. The second peer will send the message securely to the first peer (peer1), as the peers have established trust in the decentralized network.
+6. Quit (`Ctrl^C` or type `exit` and hit enter) on the second terminal window to quit the second peer.
+7. Verify the encrypted message sent by the second peer made it to the first peer (peer1) by returning to the first terminal window. The last few lines of output will now reflect the message sent by the second peer to the first peer and received by the first peer from the second peer.
+8. Quit (`Ctrl^C` or type `exit` and hit enter) on the first terminal window to quit the first peer.
