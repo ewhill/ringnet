@@ -76,7 +76,8 @@ var peer = new Peer(options);
   autodiscovery (`startDiscovery`), post-creation. This peer will, if given 
   an IP to discover with no port, scan ports 26780-26790 (inclusive) against 
   the IP in order to attempt to establish a secure connection with said IP. 
-  This peer will also output diagnostics (`debug`).
+  This peer will report that it's public IP address is "127.0.0.1" and it 
+  will also output diagnostics (`debug`).
 */
 
 var peer = new Peer({
@@ -91,6 +92,7 @@ var peer = new Peer({
   'port': 26780,
   'discoveryAddresses': [ "127.0.0.1:26781" ],
   'discoveryRange': [ 26780, 27900 ],
+  'publicAddress': "127.0.0.1",
   'startDiscovery': true,
   'debug': true,
 });
