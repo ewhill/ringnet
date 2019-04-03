@@ -33,10 +33,10 @@
   "license": "MIT",
   "dependencies": {
     "node-rsa": "^0.4.2",
-    "websocket": "^1.0.26"
+    "websocket": "^1.0.28"
   },
   "devDependencies": {
-    "mongoose": "^5.1.1",
-    "tape": "^4.9.0"
+    "mongoose": "^5.4.20",
+    "tape": "^4.10.1"
   }
 }
