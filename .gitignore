@@ -7,3 +7,4 @@ node_modules
 *.signature
 *.log
 *.txt
+package-lock.json
