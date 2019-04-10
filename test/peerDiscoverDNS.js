@@ -107,6 +107,7 @@ return task
           line = line.toString();
           
           if(line == 'exit') { // User typed 'exit'
+            p.close();
             readInterface.close(); //close return
             process.exit(0);
           } else if(line == 'peers') {
