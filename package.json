@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "mongoose": "^5.4.20",
-    "tape": "^4.10.1"
+    "tape": "^4.10.1",
+    "ws": "^6.2.1"
   }
 }
