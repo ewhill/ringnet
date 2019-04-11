@@ -138,24 +138,9 @@ peer.on('your_custom_message_header_type', () => {
 
 #### Creating and Sending Messages
 ```js
-// Create a new PeerMessage object with header type of 'update' and an object for its body.
-// (See PeerMessage.PEER_MESSAGE_TYPES object for additional message types or to add your own)
-var message = new PeerMessage({
-  'type': PeerMessage.PEER_MESSAGE_TYPES.update,
-  'body': {
-    'someProperty': someValue
-  }
-});
-
-// Broadcast the message to all connected, verified peers
-peer.broadcast({ message });
-```
-
-#### Creating and Sending Custom Messages
-```js
 // Create a new PeerMessage object with header type of 'blahblahblah' and an object for its body.
 var message = new PeerMessage({
-  'type': "blahblahblah",
+  'type': "MySuperCoolMessage",
   'body': {
     'someProperty': someValue
   }
@@ -167,7 +152,7 @@ peer.broadcast({ message });
 
 #### Listening for Custom Messages
 ```js
-peer.on("blahblahblah", ({ message, connection }) => {
+peer.on("MySuperCoolMessage", ({ message, connection }) => {
   // Do something here
 });
 ```

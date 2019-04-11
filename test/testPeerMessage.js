@@ -22,7 +22,7 @@ test("PeerMessage", (assert) => {
   assert.deepEqual(messageWithTypeAndBody.body, messageBody, 
     "PeerMessage constructed with options body argument should have body equal to passed body object.");
     
-  // Ensure the message has the constructed header of type = PeerMessage.PEER_MESSAGE_TYPES.update
+  // Ensure the message has the constructed header of type = 'update'
   assert.equal(messageWithTypeAndBody.header.type, 'update', 
     "PeerMessage constructed with options PeerMessage type should have header type equal to passed PeerMessage type.");
     
