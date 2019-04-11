@@ -116,7 +116,13 @@ peer.on('connection', ({connection }) => {
 });
 
 peer.on('message', () => ({ message, connection }) => {
-  /* A message has been received by the WebSocket server */
+  /*
+    A message has been received by the WebSocket server.
+
+    NOTE:
+      This event is only emitted if the message header's 'type' property is not 
+      set or is not of type string. See custom message header type example below.
+  */
 });
 
 peer.on('discovering', () => {
@@ -153,7 +159,7 @@ var message = new PeerMessage({
 peer.broadcast({ message });
 ```
 
-#### Listening for Custom Messages
+#### Listening for Messages
 ```js
 peer.on("MySuperCoolMessage", ({ message, connection }) => {
   // Do something here
