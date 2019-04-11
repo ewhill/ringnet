@@ -64,8 +64,11 @@ var peer = new Peer(options);
   - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
   - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
 - **debug** (boolean)
-  - *Optional*, defaults to false
+  - *Optional*, defaults to `false`
   - If set to true, the peer will output useful diagnostic information to `stdout` while running
+- **wsServerOptions** (object)
+  - *Optional*, defaults to empty object `{}`
+  - If given, the peer will use the provided object to create the `ws` (WebSockets) server. See https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback for more options and additional information.
 
 ##### Peer Constructor Example
 ```js
