@@ -54,7 +54,7 @@ p.on('ready', () => {
   isReady = true;
 });
 
-p.on('message', ({ message, connection }) => {
+p.on('cliMessage', ({ message, connection }) => {
   // TODO: Do something with the message (Update DB, Blockchain, etc...)
   console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
   readInterface.prompt();
@@ -92,7 +92,7 @@ if(!args.d || args.d.length < 1) {
         console.log(p.toString());
       } else {
         var message = new PeerMessage({
-          type: PeerMessage.PEER_MESSAGE_TYPES.update,
+          type: 'cliMessage',
           body: { 'data': line  }
         });
         

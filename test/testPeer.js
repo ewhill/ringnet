@@ -2,7 +2,7 @@
 
 const test = require('tape');
 
-const { Peer, PeerMessage, PeerMessageQueue, Expectation } 
+const { Peer, PeerMessage, Expectation } 
   = require('../index.js');
 
 // ===========================================================================
@@ -12,7 +12,7 @@ var tests = [{
   'peer1': {
     'send': [
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: "Howdy, it's peer1!!!"
       })
     ]
@@ -20,7 +20,7 @@ var tests = [{
   'peer2': {
     'receive': ({ message, connection }, assert, next) => {
       // Make sure the header is what we sent
-      assert.equal(message.header.type, PeerMessage.PEER_MESSAGE_TYPES.update, 
+      assert.equal(message.header.type, 'messageTest', 
         "Message header type sent by peer1 and received by peer2 should be equal.");
         
       // Make sure the body is what we sent
@@ -34,7 +34,7 @@ var tests = [{
   'peer2': {
     'send': [
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: "Hello, from peer2!!!"
       })
     ]
@@ -42,7 +42,7 @@ var tests = [{
   'peer1': {
     'receive': ({ message, connection }, assert, next) => {
       // Make sure the header is what we sent
-      assert.equal(message.header.type, PeerMessage.PEER_MESSAGE_TYPES.update, 
+      assert.equal(message.header.type, 'messageTest', 
         "Message header type sent by peer2 and received by peer1 should be equal.");
         
       // Make sure the body is what we sent
@@ -56,23 +56,23 @@ var tests = [{
   'peer1': {
     'send': [
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: 0
       }),
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: 1
       }),
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: 2
       }),
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: 3
       }),
       new PeerMessage({
-        type: PeerMessage.PEER_MESSAGE_TYPES.update,
+        type: 'messageTest',
         body: 4
       })
     ]
@@ -91,6 +91,7 @@ var tests = [{
           assert.equal(i, connection._received[i], 
             `Received message at index ${i} should be ${i}, ` +
             `and is ${connection._received[i]}!`);
+          
           if(i !== connection._received[i]) {
             inOrder = false;
           }
@@ -218,16 +219,16 @@ test("PeerTest", (assert) => {
         // Simple switch -- which peer are we looking at
         if(p == "peer1") {
           if(peer1._listener)
-            peer1.removeListener('message', peer1._listener);
+            peer1.removeListener('messageTest', peer1._listener);
             
           peer1._listener = oneTest[p].receiveWrapper;
-          peer1.on('message', peer1._listener);
+          peer1.on('messageTest', peer1._listener);
         } else if(p == "peer2") {
           if(peer2._listener)
-            peer2.removeListener('message', peer2._listener);
+            peer2.removeListener('messageTest', peer2._listener);
             
           peer2._listener = oneTest[p].receiveWrapper;
-          peer2.on('message', peer2._listener);
+          peer2.on('messageTest', peer2._listener);
         }
       }
     }

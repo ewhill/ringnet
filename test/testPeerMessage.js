@@ -14,7 +14,7 @@ test("PeerMessage", (assert) => {
   // Create a message with header type and JSON body data
   let messageBody = { 'test': "testing" };
   let messageWithTypeAndBody = new PeerMessage({
-    'type': PeerMessage.PEER_MESSAGE_TYPES.update,
+    'type': 'update',
     'body': messageBody
   });
   
@@ -23,7 +23,7 @@ test("PeerMessage", (assert) => {
     "PeerMessage constructed with options body argument should have body equal to passed body object.");
     
   // Ensure the message has the constructed header of type = PeerMessage.PEER_MESSAGE_TYPES.update
-  assert.equal(messageWithTypeAndBody.header.type, PeerMessage.PEER_MESSAGE_TYPES.update, 
+  assert.equal(messageWithTypeAndBody.header.type, 'update', 
     "PeerMessage constructed with options PeerMessage type should have header type equal to passed PeerMessage type.");
     
   // Generate new PeerMessage

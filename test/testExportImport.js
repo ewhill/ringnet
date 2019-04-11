@@ -2,7 +2,7 @@
 const fs = require('fs');
 const test = require('tape');
 
-const { Peer, PeerMessage, PeerMessageQueue, Expectation } 
+const { Peer, PeerMessage, Expectation } 
   = require('../index.js');
 
 // ----------------------------------------------------------------------------------
@@ -11,7 +11,7 @@ const { Peer, PeerMessage, PeerMessageQueue, Expectation }
 // ----------------------------------------------------------------------------------
 
 test("PeerExportImportTest", (assert) => {
-  let p = new Peer({
+  let p1 = new Peer({
     'port': 26788,
     'discoveryAddresses': [ "127.0.0.1:26780" ],
     'signature': "first.peer.signature",
@@ -24,8 +24,8 @@ test("PeerExportImportTest", (assert) => {
     'requireConfirmation': true
   });
   
-  let peerJson = p.toString();
-  p.close();
+  let peerJson = p1.toString();
+  p1.close();
   
   let p2 = new Peer(JSON.parse(peerJson));
   

@@ -8,12 +8,12 @@ const { Peer, PeerMessage, Expectation } = require('../index.js');
 // Craft the messages that we will pass between peers later
 
 let messageFromPeer1 = new PeerMessage({
-  type: PeerMessage.PEER_MESSAGE_TYPES.update,
+  type: "greeting",
   body: "Howdy, it's peer1!!!"
 });
 
 let messageFromPeer2 = new PeerMessage({
-  type: PeerMessage.PEER_MESSAGE_TYPES.update,
+  type: "greeting",
   body: "Hello, from peer2!!!"
 });
 

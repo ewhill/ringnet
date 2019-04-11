@@ -1,7 +1,7 @@
 "use strict";
 const test = require('tape');
 
-const { Peer, PeerMessage, PeerMessageQueue, Expectation } 
+const { Peer, PeerMessage, Expectation } 
   = require('../index.js');
 
 // ----------------------------------------------------------------------------------
@@ -45,8 +45,8 @@ test("PeerCustomEventListener", (assert) => {
         'event listener.');
       assert.ok(true, `Custom event listener fired; test passed.`);
       
-      peer1.close();
       peer2.close();
+      peer1.close();
       
       assert.end();
     });

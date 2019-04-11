@@ -87,7 +87,7 @@ return task
       isReady = true;
     });
     
-    p.on('message', ({ message, connection }) => {
+    p.on('cliMessage', ({ message, connection }) => {
       // TODO: Do something with the message (Update DB, Blockchain, etc...)
       console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
     });
@@ -124,7 +124,7 @@ return task
               p.broadcast({ message: queue.splice(0,1)[0] });
           } else {
             var message = new PeerMessage({
-              type: PeerMessage.PEER_MESSAGE_TYPES.update,
+              type: "cliMessage",
               body: { 'data': line }
             });
             

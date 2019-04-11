@@ -3,7 +3,7 @@ const fs = require('fs');
 var https = require('https');
 const test = require('tape');
 
-const { Peer, PeerMessage, PeerMessageQueue, Expectation } 
+const { Peer, PeerMessage, Expectation } 
   = require('../index.js');
 
 // ----------------------------------------------------------------------------------
