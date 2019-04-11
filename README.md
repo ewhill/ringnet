@@ -56,11 +56,11 @@ var peer = new Peer(options);
   - *Optional*, defaults to `[26780, 26790]`
   - If a member of `discoveryAddresses` does not contain a port, the peer will sequentially try connect to said entry using this range of ports (inclusive). The first index of this array should be the starting port and the second and last index of this array should be the ending port
 - **startDiscovery** (boolean)
-  - *Optional*, defaults to true
+  - *Optional*, defaults to `true`
   - If set to true, the peer will automatically start the discovery process after creation and initialization
   - If set to false, the peer will not automatically start the discovery process
 - **requireConfirmation** (boolean)
-  - *Optional*, defaults to true
+  - *Optional*, defaults to `true`
   - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
   - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
 - **debug** (boolean)
