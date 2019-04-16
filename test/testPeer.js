@@ -91,7 +91,7 @@ var tests = [{
           assert.equal(i, connection._received[i], 
             `Received message at index ${i} should be ${i}, ` +
             `and is ${connection._received[i]}!`);
-          
+
           if(i !== connection._received[i]) {
             inOrder = false;
           }
@@ -177,8 +177,8 @@ test("PeerTest", (assert) => {
     } else {
       // We've reached the end of 'tests' array, thus our testing is complete
       // and we can call assert.end() to close the tape testing.
-      peer1.close();
       peer2.close();
+      peer1.close();
       assert.end();
     }
   };
