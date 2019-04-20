@@ -4,7 +4,8 @@ const fs = require('fs');
 const dns = require('dns');
 const readline = require('readline');
 
-const { Peer, PeerMessage, Expectation } = require('../index.js');
+const Expectation = require('./expectation');
+const { Peer, PeerMessage } = require('../index.js');
 
 const args = (new Expectation({
     'publicAddress': "", //optional (defaults to false)

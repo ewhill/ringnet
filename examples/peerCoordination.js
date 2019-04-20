@@ -1,5 +1,5 @@
 "use strict";
-const { Peer, PeerMessage, Expectation } 
+const { Peer, PeerMessage } 
   = require('../index.js');
 
 // ----------------------------------------------------------------------------------

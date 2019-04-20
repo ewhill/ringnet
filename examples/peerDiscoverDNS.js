@@ -5,7 +5,8 @@ const dns = require('dns');
 const url = require('url');
 const readline = require('readline');
 
-const { Peer, PeerMessage, Expectation } = require('../index.js');
+const Expectation = require('./expectation');
+const { Peer, PeerMessage } = require('../index.js');
 
 const args = (new Expectation({
     'seed': "", // optional

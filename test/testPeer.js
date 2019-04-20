@@ -2,7 +2,7 @@
 
 const test = require('tape');
 
-const { Peer, PeerMessage, Expectation } 
+const { Peer, PeerMessage } 
   = require('../index.js');
 
 // ===========================================================================
