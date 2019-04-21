@@ -1,18 +1,18 @@
 "use strict";
 
-const { Peer, PeerMessage } = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // =========================================================================
 // =========================================================================
 
 // Craft the messages that we will pass between peers later
 
-let messageFromPeer1 = new PeerMessage({
+let messageFromPeer1 = new Message({
   type: "greeting",
   body: "Howdy, it's peer1!!!"
 });
 
-let messageFromPeer2 = new PeerMessage({
+let messageFromPeer2 = new Message({
   type: "greeting",
   body: "Hello, from peer2!!!"
 });

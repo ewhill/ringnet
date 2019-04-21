@@ -1,8 +1,7 @@
 "use strict";
 const test = require('tape');
 
-const { Peer, PeerMessage } 
-  = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -21,7 +20,7 @@ test("PeerCustomEventListener", (assert) => {
   });
   
   peer1.on('connection', ({ connection }) => {
-    peer1.broadcast(new PeerMessage({
+    peer1.broadcast(new Message({
       type: "Cu570m_M3554g3",
       body: "Hey, let's test this custom event listener!"
     }));
@@ -41,7 +40,7 @@ test("PeerCustomEventListener", (assert) => {
     
     peer2.on('Cu570m_M3554g3', ({ message, connection }) => {
       assert.equal(message.body, "Hey, let's test this custom event listener!", 
-        'Message with custom PeerMessage header type should be received by custom ' +
+        'Message with custom Message header type should be received by custom ' +
         'event listener.');
       assert.ok(true, `Custom event listener fired; test passed.`);
       

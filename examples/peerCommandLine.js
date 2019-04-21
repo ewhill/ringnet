@@ -5,7 +5,7 @@ const dns = require('dns');
 const readline = require('readline');
 
 const Expectation = require('./expectation');
-const { Peer, PeerMessage } = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 const args = (new Expectation({
     'publicAddress': "", //optional (defaults to false)
@@ -92,7 +92,7 @@ if(!args.d || args.d.length < 1) {
       } else if(line == 'toString()') {
         console.log(p.toString());
       } else {
-        var message = new PeerMessage({
+        var message = new Message({
           type: 'cliMessage',
           body: { 'data': line  }
         });

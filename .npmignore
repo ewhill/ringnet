@@ -8,3 +8,4 @@ package-lock.json
 *.txt
 .imdone
 .imdone/*
+.DS_Store

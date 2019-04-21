@@ -1,7 +1,4 @@
 const Peer = require('./lib/peer');
-const PeerMessage = require('./lib/message');
+const Message = require('./lib/src/message.js');
 
-module.exports = {
-  Peer,
-  PeerMessage
-};
+module.exports = { Peer, Message };

@@ -2,8 +2,7 @@
 
 const test = require('tape');
 
-const { Peer, PeerMessage } 
-  = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // ===========================================================================
 // ===========================================================================
@@ -11,7 +10,7 @@ const { Peer, PeerMessage }
 var tests = [{
   'peer1': {
     'send': [
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: "Howdy, it's peer1!!!"
       })
@@ -33,7 +32,7 @@ var tests = [{
 }, {
   'peer2': {
     'send': [
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: "Hello, from peer2!!!"
       })
@@ -55,23 +54,23 @@ var tests = [{
 }, {
   'peer1': {
     'send': [
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: 0
       }),
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: 1
       }),
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: 2
       }),
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: 3
       }),
-      new PeerMessage({
+      new Message({
         type: 'messageTest',
         body: 4
       })

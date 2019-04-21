@@ -8,3 +8,4 @@ node_modules
 *.signature
 *.log
 *.txt
+.DS_STORE

@@ -3,8 +3,7 @@ const fs = require('fs');
 var https = require('https');
 const test = require('tape');
 
-const { Peer, PeerMessage } 
-  = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------

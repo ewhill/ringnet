@@ -1,6 +1,5 @@
 "use strict";
-const { Peer, PeerMessage } 
-  = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -54,7 +53,7 @@ var broadcastTake = (peer, jobs) => {
   
   peer.jobs = jobs;
   
-  let takeMessage = new PeerMessage({
+  let takeMessage = new Message({
     'type': 'take',
     'body': {
       'jobs': jobsToSend,
@@ -131,7 +130,7 @@ var takeHandler = (peer, { message, connection }) => {
     got = message.body.jobs;
   }
   
-  let takeResultMessage = new PeerMessage({
+  let takeResultMessage = new Message({
     'type': 'takeResult',
     'body': { got, drop }
   });

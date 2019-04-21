@@ -2,8 +2,7 @@
 const fs = require('fs');
 const test = require('tape');
 
-const { Peer, PeerMessage } 
-  = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------

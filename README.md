@@ -15,7 +15,7 @@ npm install ringnet
 
 #### Include ringnet
 ```js
-const { Peer, PeerMessage } = require('ringnet');
+const { Peer, Message } = require('ringnet');
 ```
 
 #### Creating a new peer
@@ -147,8 +147,8 @@ peer.on('your_custom_message_header_type', () => {
 
 #### Creating and Sending Messages
 ```js
-// Create a new PeerMessage object with header type of 'blahblahblah' and an object for its body.
-var message = new PeerMessage({
+// Create a new Message object with header type of 'blahblahblah' and an object for its body.
+var message = new Message({
   'type': "MySuperCoolMessage",
   'body': {
     'someProperty': someValue

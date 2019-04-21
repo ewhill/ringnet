@@ -6,7 +6,7 @@ const url = require('url');
 const readline = require('readline');
 
 const Expectation = require('./expectation');
-const { Peer, PeerMessage } = require('../index.js');
+const { Peer, Message } = require('../index.js');
 
 const args = (new Expectation({
     'seed': "", // optional
@@ -124,7 +124,7 @@ return task
             while(queue.length > 0)
               p.broadcast({ message: queue.splice(0,1)[0] });
           } else {
-            var message = new PeerMessage({
+            var message = new Message({
               type: "cliMessage",
               body: { 'data': line }
             });
