@@ -6,71 +6,72 @@ This package aims to create a secure, trusted network among decentralized peers,
 
 ### This package is in ALPHA development; you've been warned.
 
-### Install
+## Install
 ```bash
 npm install ringnet
 ```
 
-### Usage
+## Usage
 
-#### Include ringnet
+### Include ringnet
 ```js
 const { Peer, Message } = require('ringnet');
 ```
 
-#### Creating a new peer
+### Creating a new peer
 ```js
+// See 'Constructor Options' below.
 var peer = new Peer(options);
 ```
 
-##### Constructor Options
-- **ringPublicKey** (string)
-  - **_Required_**, defaults to `ring.pub`
-  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
-- **publicKey** (string)
-  - **_Required_**, defaults to `peer.pub`
-  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
-- **privateKey** (string)
-  - **_Required_**, defaults to `peer.pem`
-  - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
-- **signature** (string)
-  - **_Required_**, defaults to `peer.signature`
-  - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
-- **httpsServer** (object)
-  - *Optional*, defaults to `false`.
-  - If provided, the peer will use the given HTTPS Server for creation of the underyling WebSocket server.
-- **credentials** (object)
+### Constructor Options
+#### **credentials** (object)
   - *Optional*, defaults to `{'key: "https.key.pem", 'cert': "https.cert.pem"}`.
   - If provided, the peer will use the key (`credentials.key`) and cert (`credentials.cert`) properties for creation of the https server in which to listen for incomming `wss` (secure) connections. Previously an insecure http server was used for peer-to-peer communcation and has since been deprecated. The peer *must* have valid https key and certificate in order to run. Self-signed certificates are acceptable for use.
   - NOTE: If the `httpsServer` is provided, and is a valid HTTPS server instance, this option, `credentials`, will be ignored.
-- **port** (integer)
-  - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
-  - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
-- **discoveryAddresses** (array)
+#### **debug** (boolean)
+  - *Optional*, defaults to `false`
+  - If set to true, the peer will output useful diagnostic information to `stdout` while running
+#### **discoveryAddresses** (array)
   - *Optional*, defaults to empty array `[]`
   - The addresses with or without accompanying ports of peers that the created peer will try to connect to after intialization
-- **publicAddress** (array)
-  - *Optional*, defaults to `false`.
-  - The addresses that will be used to tell other peers where they can find us when new peers connect to them. This address should be a publicly accessible FQDN or IP address that will resolve to this instantiated peer.
-- **discoveryRange** (array, length=2)
+#### **discoveryRange** (array, length=2)
   - *Optional*, defaults to `[26780, 26790]`
   - If a member of `discoveryAddresses` does not contain a port, the peer will sequentially try connect to said entry using this range of ports (inclusive). The first index of this array should be the starting port and the second and last index of this array should be the ending port
-- **startDiscovery** (boolean)
-  - *Optional*, defaults to `true`
-  - If set to true, the peer will automatically start the discovery process after creation and initialization
-  - If set to false, the peer will not automatically start the discovery process
-- **requireConfirmation** (boolean)
+#### **httpsServer** (object)
+  - *Optional*, defaults to `false`.
+  - If provided, the peer will use the given HTTPS Server for creation of the underyling WebSocket server.
+#### **port** (integer)
+  - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
+  - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
+#### **requireConfirmation** (boolean)
   - *Optional*, defaults to `true`
   - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
   - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
-- **debug** (boolean)
-  - *Optional*, defaults to `false`
-  - If set to true, the peer will output useful diagnostic information to `stdout` while running
-- **wsServerOptions** (object)
+#### **ringPublicKey** (string)
+  - **_Required_**, defaults to `ring.pub`
+  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
+#### **privateKey** (string)
+  - **_Required_**, defaults to `peer.pem`
+  - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
+#### **publicAddress** (array)
+  - *Optional*, defaults to `false`.
+  - The addresses that will be used to tell other peers where they can find us when new peers connect to them. This address should be a publicly accessible FQDN or IP address that will resolve to this instantiated peer.
+#### **publicKey** (string)
+  - **_Required_**, defaults to `peer.pub`
+  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
+#### **signature** (string)
+  - **_Required_**, defaults to `peer.signature`
+  - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
+#### **startDiscovery** (boolean)
+  - *Optional*, defaults to `true`
+  - If set to true, the peer will automatically start the discovery process after creation and initialization
+  - If set to false, the peer will not automatically start the discovery process
+#### **wsServerOptions** (object)
   - *Optional*, defaults to empty object `{}`
   - If given, the peer will use the provided object to create the `ws` (WebSockets) server. See https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback for more options and additional information.
 
-##### Peer Constructor Example
+### Peer Constructor Example
 ```js
 /*
   Create a peer, `peer`, using `myRingPulicKey.pub`, `myPeerPublicKey.pub`, 
@@ -101,7 +102,7 @@ var peer = new Peer({
 });
 ```
 
-#### Setting up the event handlers
+### Setting up the event handlers
 ```js
 peer.on('ready', () => {
   /* Underyling HTTP Server is ready */
@@ -145,7 +146,7 @@ peer.on('your_custom_message_header_type', () => {
 });
 ```
 
-#### Creating and Sending Messages
+### Creating and Sending Messages
 ```js
 // Create a new Message object with header type of 'blahblahblah' and an object for its body.
 var message = new Message({
@@ -159,7 +160,7 @@ var message = new Message({
 peer.broadcast({ message });
 ```
 
-#### Listening for Messages
+### Listening for Messages
 ```js
 peer.on("MySuperCoolMessage", ({ message, connection }) => {
   // Do something here
