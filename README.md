@@ -4,7 +4,7 @@
 
 This package aims to create a secure, trusted network among decentralized peers, and make the aforementioned easy to setup and use right out-of-the-box.
 
-### This package is in ALPHA development; you've been warned.
+### This package is (still) in development and, while unit testing exists for a fair bit of the code base, the coverage of said tests varies. Please ensure your project's usecase takes the status of this package into account before including this package into a "production" environment.
 
 ## Install
 ```bash
@@ -44,13 +44,6 @@ var peer = new Peer(options);
 #### **port** (integer)
   - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
-#### **requireConfirmation** (boolean)
-  - *Optional*, defaults to `true`
-  - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
-  - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
-#### **ringPublicKey** (string)
-  - **_Required_**, defaults to `ring.pub`
-  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
 #### **privateKey** (string)
   - **_Required_**, defaults to `peer.pem`
   - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
@@ -60,6 +53,13 @@ var peer = new Peer(options);
 #### **publicKey** (string)
   - **_Required_**, defaults to `peer.pub`
   - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
+#### **requireConfirmation** (boolean)
+  - *Optional*, defaults to `true`
+  - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
+  - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
+#### **ringPublicKey** (string)
+  - **_Required_**, defaults to `ring.pub`
+  - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
 #### **signature** (string)
   - **_Required_**, defaults to `peer.signature`
   - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
