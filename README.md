@@ -51,8 +51,8 @@ var peer = new Peer(options);
   - *Optional*, defaults to `false`.
   - The addresses that will be used to tell other peers where they can find us when new peers connect to them. This address should be a publicly accessible FQDN or IP address that will resolve to this instantiated peer.
 #### **publicKey** (string)
-  - **_Required_**, defaults to `peer.pub`
-  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network
+  - *Optional*, defaults to `peer.pub`
+  - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network. If missing, the publicKey will attempt to be derrived from privateKey, if privateKey is given and valid. 
 #### **requireConfirmation** (boolean)
   - *Optional*, defaults to `true`
   - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
