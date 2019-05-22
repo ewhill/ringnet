@@ -50,7 +50,7 @@ USAGE:
 
 const fs = require('fs'),
   NodeRSA = require('node-rsa'),
-  { Expectation } = require('./index.js');
+  Expectation = require('./expectation');
 
 // Grab the necessary arguments from `process.argv` using `Expectation`
 const args =  (new Expectation({
