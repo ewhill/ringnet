@@ -12,7 +12,7 @@ let keyNames = ["../first", "../second", "../third" ];
 let nPeers = 3;
 let peers = {};
 
-for(let i=0,lastPort=26780; i<nPeers; i++,lastPort=(26780+i-1)) {
+for(let i=0; i<nPeers; i++) {
     let options = {
         'publicAddress': "127.0.0.1",
         'signature': keyNames[i]+".peer.signature",
@@ -40,7 +40,6 @@ for(let i=0,lastPort=26780; i<nPeers; i++,lastPort=(26780+i-1)) {
 // ----------------------------------------------
 // ----------------------------------------------
 
-
 class RingnetGateway {
     constructor({
         debug       = false,
@@ -54,40 +53,38 @@ class RingnetGateway {
         this.server = httpServer;
 
         if(this.server) {
-            var self = this;
+            this.server.on('upgrade', (request, socket, head) => 
+                this.onUpgrade.apply(this, [ request, socket, head ]));
 
-            self.server.on('upgrade', function upgrade(request, socket, head) {
-                let pathname = url.parse(request.url).pathname;
-                pathname = pathname.replace(/^([\/\\]*)(.*)$/i, '$2');
+            this.server.listen(this.port, () => this.onListen.apply(this, []));
+        }
+    }
 
-                if(self.map.hasOwnProperty(pathname) && self.map[pathname] instanceof Peer) {
-                    if(self.debug) {
-                        console.log(`Accepted connection to ${pathname}.`);
-                        console.log(`Upgrading connection to Websocket connection...`);
-                    }
+    onListen() {
+        if(this.debug) {
+            console.log(`Ringnet gateway listening on port ${this.port}`);
+            console.log(`Mappings:`);
+            for(let route of Object.keys(this.map)) {
+                console.log(`\t${route}`);
+            }
+        }
+    }
 
-                    self.map[pathname].wsServer.handleUpgrade(
-                        request,
-                        socket,
-                        head,
-                        function done(ws) {
-                            self.map[pathname].wsServer.emit('connection', ws, request);
-                        });
-                } else {
-                    // There is no corresponding client, destroy socket.
-                    socket.destroy();
-                }
-            });
+    onUpgrade(request, socket, head) {
+        let pathname = url.parse(request.url).pathname;
+        pathname = pathname.replace(/^([\/\\]*)(.*)$/i, '$2');
 
-            self.server.listen(self.port, function listening() {
-                if(self.debug) {
-                    console.log(`Ringnet gateway listening on port ${self.port}`);
-                    console.log(`Mappings:`);
-                    for(let route of Object.keys(self.map)) {
-                        console.log(`\t${route}`);
-                    }
-                }
-            });
+        if(this.map.hasOwnProperty(pathname) && this.map[pathname] instanceof Peer) {
+            if(this.debug) {
+                console.log(`Accepted connection to ${pathname}.`);
+                console.log(`Upgrading connection to Websocket connection...`);
+            }
+
+            this.map[pathname].wsServer.handleUpgrade(request, socket, head,
+                (ws) => this.map[pathname].wsServer.emit('connection', ws, request));
+        } else {
+            // There is no corresponding client, destroy socket.
+            socket.destroy();
         }
     }
 }
