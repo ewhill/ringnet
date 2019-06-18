@@ -119,7 +119,6 @@ test("EventsOnHelo", (assert) => {
 			c(new Error("test2!"));
 		} else if(sentTimes === 3) {
 			sentMessage = JSON.parse(m);
-			console.log(sentMessage);
 		}
 	}
 
