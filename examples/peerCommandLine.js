@@ -55,7 +55,7 @@ p.on('ready', () => {
   isReady = true;
 });
 
-p.on('cliMessage', ({ message, connection }) => {
+p.on('msg', ({ message, connection }) => {
   // TODO: Do something with the message (Update DB, Blockchain, etc...)
   console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
   readInterface.prompt();
@@ -93,8 +93,8 @@ if(!args.d || args.d.length < 1) {
         console.log(p.toString());
       } else {
         var message = new Message({
-          type: 'cliMessage',
-          body: { 'data': line  }
+          type: 'msg',
+          body: { 'text': line  }
         });
         
         if(isReady && canSend)

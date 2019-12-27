@@ -1,10 +1,10 @@
 "use strict";
 const { Peer, Message } = require('../index.js');
 
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 let alphabet = "abcdefghijklmnopqrstuvwxyz";
 let sharedQueue = [];
@@ -28,12 +28,12 @@ for(let i=0,lastPort=26780; i<nPeers; i++,lastPort=(26780+i-1)) {
   peers.push(new Peer(options));
 }
 
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
-var broadcastTake = (peer, jobs) => {
+const broadcastTake = (peer, jobs) => {
   if(jobs && !Array.isArray(jobs))
     jobs = [jobs];
     
@@ -42,6 +42,7 @@ var broadcastTake = (peer, jobs) => {
   
   for(let i=0; i<jobs.length; i++) {
     jobs[i] = {
+      // Want everyone to respond, can be updated to > 50% as you see fit
       'needed': peer.peers.length,
       'responses': 0,
       'confirmed': 0,
@@ -67,22 +68,22 @@ var broadcastTake = (peer, jobs) => {
   peer.broadcast(takeMessage);
 };
 
-var takeHandler = (peer, { message, connection }) => {
+const takeRequestHandler = (peer, { message, connection }) => {
   let got = [];
   let drop = [];
     
   if(peer.jobs && Array.isArray(peer.jobs) && peer.jobs.length > 0) {
     console.log(`${peer.port} received 'take' ` + 
       `message and has jobs in queue already.`);
-      
-    let incomingAfterSent = false;
     
-    if(message.body.hasOwnProperty("timestamp") && typeof message.body.timestamp == "number") {
-      try {
-        message.body.timestamp = new Date(message.body.timestamp);
-      } catch(e) {}
+    if(message.body.hasOwnProperty("timestamp") && 
+      typeof message.body.timestamp == "number") {
+        try {
+          message.body.timestamp = new Date(message.body.timestamp);
+        } catch(e) {}
     } else {
-      console.log(`message.body.timestamp (${typeof message.body.timestamp}): ${message.body.timestamp}`);
+      console.log(`message.body.timestamp ` + 
+        `(${typeof message.body.timestamp}): ${message.body.timestamp}`);
     }
     
     if(message.body.jobs && Array.isArray(message.body.jobs)) {
@@ -90,43 +91,40 @@ var takeHandler = (peer, { message, connection }) => {
         let found = false;
        
         for(let j=peer.jobs.length-1; j>=0; j--) {
-          if(JSON.stringify(message.body.jobs[i]) == JSON.stringify(peer.jobs[j].job)) {
-            found = true;
-            let difference = (message.body.timestamp - peer.jobs[j].enqueued);
-            
-            if(difference > 0) {
-              // Job ${message.body.jobs[i]} DOES conflict and will be DROPPED!
+          if(JSON.stringify(message.body.jobs[i]) == 
+            JSON.stringify(peer.jobs[j].job)) {
+              found = true;
+              let difference = (message.body.timestamp - peer.jobs[j].enqueued);
               
-              drop.push(message.body.jobs[i]);
-            } else if(difference === 0) {
-              // Both jobs were enqueued at EXACTLY the same time. Cannot proceed,
-              // and both peers must drop the job.
+              if(difference > 0) {
+                // Job ${message.body.jobs[i]} DOES conflict, will be DROPPED!
+                drop.push(message.body.jobs[i]);
+              } else if(difference === 0) {
+                // Both jobs were enqueued at EXACTLY the same time. Cannot 
+                // proceed, and both peers must drop the job.
+                drop.push(message.body.jobs[i]);
+                peer.jobs.splice(j,1);
+              } else {
+                // Job ${message.body.jobs[i]} conflicts but was enqueued by 
+                // peer before it was locally enqueued. The job will be 
+                // confirmed to peer and dropped locally.
+                got.push(message.body.jobs[i]);
+                peer.jobs.splice(j,1);
+              }
               
-              drop.push(message.body.jobs[i]);
-              peer.jobs.splice(j,1);
-            } else {
-              // Job ${message.body.jobs[i]} conflicts but was enqueued
-              // by peer before it was locally enqueued. The job will be confirmed
-              // to peer and dropped locally.
-                
-              got.push(message.body.jobs[i]);
-              peer.jobs.splice(j,1);
-            }
-            
-            break;
+              break;
           }
         }
         
         if(!found) {
-          // Job ${message.body.jobs[i]} does not conflict and will be CONFIRMED.
+          // Job ${message.body.jobs[i]} DOES NOT conflict, will be CONFIRMED.
           got.push(message.body.jobs[i]);
         }
       }
     }
   } else {
-    // Peer received 'take' message and doew not have jobs in queue. All requested 
-    // jobs will be confirmed.
-      
+    // Peer received 'take' message and does not have jobs in queue. All 
+    // requested jobs will be confirmed.
     got = message.body.jobs;
   }
   
@@ -141,16 +139,17 @@ var takeHandler = (peer, { message, connection }) => {
   peer.broadcast(takeResultMessage, connection);
 };
 
-var takeResultHandler = (peer, { message, connection }) => {
+const takeResultHandler = (peer, { message, connection }) => {
   if(message.body.hasOwnProperty("got") && Array.isArray(message.body.got)) {
     for(let i=0; i<message.body.got.length; i++) {
       for(let j=0; j<peer.jobs.length; j++) {
-        if(JSON.stringify(message.body.got[i]) == JSON.stringify(peer.jobs[j].job)) {
-          console.log(`\t${peer.port} has received 'got' `+
-            `for job: ${message.body.got[i]}`);
-            
-          peer.jobs[j].confirmed++;
-          peer.jobs[j].responses++;
+        if(JSON.stringify(message.body.got[i]) == 
+          JSON.stringify(peer.jobs[j].job)) {
+            console.log(`\t${peer.port} has received 'got' `+
+              `for job: ${message.body.got[i]}`);
+              
+            peer.jobs[j].confirmed++;
+            peer.jobs[j].responses++;
         }
       }
     }
@@ -159,12 +158,13 @@ var takeResultHandler = (peer, { message, connection }) => {
   if(message.body.hasOwnProperty("drop") && Array.isArray(message.body.drop)) {
     for(let i=0; i<message.body.drop.length; i++) {
       for(let j=0; j<peer.jobs.length; j++) {
-        if(JSON.stringify(message.body.drop[i]) == JSON.stringify(peer.jobs[j].job)) {
-          console.log(`\t${peer.port} has received 'drop' `+
-            `for job: ${message.body.drop[i]}`);
-            
-          peer.jobs[j].dropped++;
-          peer.jobs[j].responses++;
+        if(JSON.stringify(message.body.drop[i]) == 
+          JSON.stringify(peer.jobs[j].job)) {
+            console.log(`\t${peer.port} has received 'drop' `+
+              `for job: ${message.body.drop[i]}`);
+              
+            peer.jobs[j].dropped++;
+            peer.jobs[j].responses++;
         }
       }
     }
@@ -172,14 +172,15 @@ var takeResultHandler = (peer, { message, connection }) => {
   
   for(let j=peer.jobs.length-1; j>=0; j--) {
     if(peer.jobs[j].responses >= peer.jobs[j].needed) { 
-      if(peer.jobs[j].confirmed >= peer.jobs[j].needed && peer.jobs[j].dropped === 0) {
-        console.log(`\t${peer.port} has received all necessary `+
-          `responses for job and will begin processing: ${peer.jobs[j].job}`);
-        
-        processJob(peer.jobs.splice(j,1)[0].job);
+      if(peer.jobs[j].confirmed >= peer.jobs[j].needed && 
+        peer.jobs[j].dropped === 0) {
+          console.log(`\t${peer.port} has received all necessary responses ` + 
+            `for job and will begin processing: ${peer.jobs[j].job}`);
+          
+          processJob(peer.jobs.splice(j,1)[0].job);
       } else {
-        console.log(`\t${peer.port} has received all necessary `+
-          `responses for job but job was dropped by one or more peers; dropping job.`);
+        console.log(`\t${peer.port} has received all necessary responses for ` + 
+          `job but job was dropped by one or more peers; dropping job.`);
         
         peer.jobs.splice(j,1);
       }
@@ -187,7 +188,7 @@ var takeResultHandler = (peer, { message, connection }) => {
   }
 };
 
-var processJob = (job) => {
+const processJob = (job) => {
   setTimeout(() => {
     for(let i=sharedQueue.length-1; i>=0; i--) {
       if(JSON.stringify(sharedQueue[i]) == JSON.stringify(job)) {
@@ -201,12 +202,14 @@ var processJob = (job) => {
 
 
 for(let peer of peers) {
-  peer.on('take', (o) => { return takeHandler(peer, o); });
+  peer.on('take', (o) => { return takeRequestHandler(peer, o); });
   peer.on('takeResult', (o) => { return takeResultHandler(peer, o); });
 }
 
-var loop = (peer) => {
+const loop = (peer) => {
   return new Promise((success, failure) => {
+    // Simulate getting available jobs. This could be replaced with a DB 
+    // lookup, bus dequeue, etc., as your application sees fit.
     return success(sharedQueue);
   })
   .then(results => {
@@ -241,7 +244,10 @@ var loop = (peer) => {
 
 // On a 10s interval, add a random letter from 'alphabet' into 'sharedQueue'
 setInterval(function() {
-  sharedQueue.push(alphabet[parseInt(Math.floor(Math.random()*alphabet.length))]);
+  const randomNewJob = 
+    alphabet[parseInt(Math.floor(Math.random()*alphabet.length))];
+  sharedQueue.push(randomNewJob);
+
   console.log(`New sharedQueue: [ ${sharedQueue} ]`);
 }, 10000);
 

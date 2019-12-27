@@ -37,13 +37,16 @@ test("EventsOnConfirm", (assert) => {
 		}
 	};
 
+	let toBeConfirmed = {
+		header: {
+			hash: "abcdefghijklmnopqrstuvwxyz",
+			timestamp: testDate
+		}
+	};
+
 	let testConnection = {
-		unconfirmedMessages: [ {
-			header: {
-				hash: "abcdefghijklmnopqrstuvwxyz",
-				timestamp: testDate
-			}
-		} ]
+		unconfirmedMessages: [ toBeConfirmed ],
+		confirmedMessages: []
 	};
 
 	onConfirm.apply(testPeer, [{ connection: testConnection, 
@@ -53,12 +56,25 @@ test("EventsOnConfirm", (assert) => {
 		"connection.unconfirmedMessages should not be affected " + 
 		"when passed invalid confirmation message.");
 
+	assert.equal(testConnection.confirmedMessages.length, 0, 
+		"connection.confirmedMessages should not be affected " + 
+		"when passed invalid confirmation message.");
+
 	onConfirm.apply(testPeer, [{ connection: testConnection, 
 		message: testGoodMessage }]);
 
 	assert.equal(testConnection.unconfirmedMessages.length, 0, 
 		"connection.unconfirmedMessages should be empty when " + 
 		"onConfirm is passed valid confirmation message.");
+
+	assert.equal(testConnection.confirmedMessages.length, 1, 
+		"connection.confirmedMessages should have length == 1.");
+
+	assert.equal(
+		JSON.stringify(testConnection.confirmedMessages[0]), 
+		JSON.stringify(toBeConfirmed), 
+		"connection.confirmedMessages should contain the " + 
+		"confirmed message.");
 
 	assert.end();
 });
