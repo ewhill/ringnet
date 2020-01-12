@@ -1,10 +1,10 @@
 "use strict";
 const fs = require('fs');
-const NodeRSA = require('node-rsa');
 const test = require('tape');
 
 const Message = require('../../lib/src/message.js');
 const onHelo = require('../../lib/src/events/helo');
+const RSAKeyPair = require('../../lib/src/RSAKeyPair.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ test("EventsOnHelo", (assert) => {
 		"cVFDK0Q4Cm5va1ltenUxRWtMWmdUYkFIZkVpSTNzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJ" + 
 		"QyBLRVktLS0tLQo=", 'base64');
 
-	let testSignature = "TlAtCVxlg2Mh69HhHiC0tUlCqCcPSPX9GtleAb6sJmi5v7Kh8K3tSGvo" + 
+	let testSignature = Buffer.from("TlAtCVxlg2Mh69HhHiC0tUlCqCcPSPX9GtleAb6sJmi5v7Kh8K3tSGvo" + 
 		"ynInoM0yTYfgk8PipjQbUu4MwsEdaAvUlaQ9Xpl8g7REyODSsgeXWgRGupnihZWBE5lrWxN1" + 
 		"s4XLujN+FV8ojm0xL8nmv9HyB4ETpu+/gGDJpgy1QUNnF738pcmEjBcM80WI5wFDrVcQLZ9q" + 
 		"7Ic6MwyOiSa3DQd8SdBFepMWciZoeW7AUxstWMTqDR3rkog39bYuNNlsbhhDtyBeTiWnjnzR" + 
@@ -100,7 +100,7 @@ test("EventsOnHelo", (assert) => {
 		"nkHqLkZm10RrvC+EEe+SSyRk4XtG59Mfp+6Be7thlVyn8KSbxCf882E4snBUNB5qSpOeJLs6" + 
 		"pbn45QzmzULSOjwyry/FndQnEbj8JbUnfRMlrILSgZvnVH7XW6/2GU31KiE1HDd/6IO/LmF0" + 
 		"U5SA6GdQmyQn76Sd3K7fF6nhjiNvVQM4C6bsjk7ZBYGMV55Co8jAfXU1J2UFvz55x0Lxh57p" + 
-		"o6aHTbohxgsKsg4YoJj7QWkLc6lxsCROeNr53oVfIbO9X5+nJ2E=";
+		"o6aHTbohxgsKsg4YoJj7QWkLc6lxsCROeNr53oVfIbO9X5+nJ2E=", 'base64');
 
 	let testForOwnSignature = false;
 	let isOwnSignatureHandler = () => testForOwnSignature;
@@ -134,10 +134,10 @@ test("EventsOnHelo", (assert) => {
 			setTimeout: (f, d) => f()
 		},
 		port: testPort,
-		privateKey: new NodeRSA(testPrivateKey),
+		peerRSAKeyPair: new RSAKeyPair({ privateKeyBuffer: testPrivateKey }),
 		publicAddress: testPublicAddress,
 		requireConfirmation : false,
-		ringPublicKey: new NodeRSA(testPublicKey),
+		ringRSAKeyPair: new RSAKeyPair({ publicKeyBuffer: testPublicKey }),
 	};
 
 	let testConnection = {
@@ -148,7 +148,7 @@ test("EventsOnHelo", (assert) => {
 	let testMessage = {
 		body: {
 			publicKey: testPublicKey,
-			signature: testSignature.toString("base64")
+			signature: testSignature.toString("hex")
 		}
 	};
 
@@ -161,8 +161,8 @@ test("EventsOnHelo", (assert) => {
 
 	testForOwnSignature = false;
 
-	let oldVerify = testPeer.ringPublicKey.verify;
-	testPeer.ringPublicKey.verify = () => { throw new Error("test!"); };
+	let oldVerify = testPeer.ringRSAKeyPair.verify;
+	testPeer.ringRSAKeyPair.verify = () => { throw new Error("test!"); };
 
 	let verifyResult = onHelo.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection }]);
@@ -170,7 +170,7 @@ test("EventsOnHelo", (assert) => {
 	assert.notOk(verifyResult, "When key verification fails, error "  +
 		"should be gracefully caught and function should return false.");
 
-	testPeer.ringPublicKey.verify = () => { return true; };
+	testPeer.ringRSAKeyPair.verify = () => { return true; };
 
 	onHelo.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection }]);
@@ -178,7 +178,7 @@ test("EventsOnHelo", (assert) => {
 	assert.ok(testConnection.trusted, "Correct message and verified key " + 
 		"should result in a trusted connection.");
 
-	assert.ok(testConnection.peerPublicKey instanceof NodeRSA, "Correct " + 
+	assert.ok(testConnection.peerRSAKeyPair instanceof RSAKeyPair, "Correct " + 
 		"message and verified key should set the connection's peer " + 
 		"public key.");
 

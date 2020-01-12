@@ -48,9 +48,9 @@ USAGE:
 ***************************************************************************************************
 **************************************************************************************************/
 
-const fs = require('fs'),
-  NodeRSA = require('node-rsa'),
-  Expectation = require('./expectation');
+const fs = require('fs');
+const RSAKeyPair = require('../lib/src/RSAKeyPair.js');
+const Expectation = require('./expectation');
 
 // Grab the necessary arguments from `process.argv` using `Expectation`
 const args =  (new Expectation({
@@ -80,8 +80,8 @@ if(args.h || args.help) {
 // A little bit of setup required...
 let fileName = args.o || args.out || "",
   createdRing = false, createdPeer = false,
-  ringPrivate = false, ringPublic = false,
-  peerPrivate = false, peerPublic = false,
+  ringRSAKeyPair = false,
+  peerRSAKeyPair = false,
   keySize = args.b || 2048;
   
 // Create `debug` function, if `verbose`, from console.log
@@ -92,17 +92,22 @@ var verbose = !(args.s || args.silent),
 debug(`Parsing / Generating ring keys...`);
 
 if(args.ring && Array.isArray(args.ring)) {
+  // We were given the command line option `-ring`
   if(args.ring.length == 2) {
-    ringPrivate = new NodeRSA(fs.readFileSync(args.ring[0]));
-    ringPublic = new NodeRSA(fs.readFileSync(args.ring[1]));
+    // Given BOTH private and public keys
+    ringRSAKeyPair = new RSAKeyPair({
+        privateKeyPath: args.ring[0],
+        publicKeyPath: args.ring[1]
+      });
   } else if(args.ring.length == 1) {
-    ringPrivate = new NodeRSA(fs.readFileSync(args.ring[0]));
-    ringPublic = new NodeRSA(ringPrivate.exportKey("public"));
+    // Given ONLY private key
+    ringRSAKeyPair = ringRSAKeyPair = new RSAKeyPair({
+        privateKeyPath: args.ring[0]
+      });
   }
 } else {
   createdRing = true;
-  ringPrivate = new NodeRSA({b: keySize});
-  ringPublic = new NodeRSA(ringPrivate.exportKey("public"));
+  ringRSAKeyPair = (new RSAKeyPair()).generate({ modulusLength: keySize });
 }
 
 debug(`Parsing / Generating peer keys...`);
@@ -111,42 +116,63 @@ if(args.peer && Array.isArray(args.peer)) {
   // We were given the command line option `-peer`
   if(args.peer.length == 2) {
     // Given BOTH private and public keys
-    peerPrivate = new NodeRSA(fs.readFileSync(args.peer[0]));
-    peerPublic = new NodeRSA(fs.readFileSync(args.peer[1]));
+    peerRSAKeyPair = new RSAKeyPair({
+        privateKeyPath: args.peer[0],
+        publicKeyPath: args.peer[1]
+      });
   } else if(args.peer.length == 1) {
     // Given ONLY private key
-    peerPrivate = new NodeRSA(fs.readFileSync(args.peer[0]));
-    // Generate public from private
-    peerPublic = new NodeRSA(peerPrivate.exportKey("public"));
+    peerRSAKeyPair = new RSAKeyPair({
+        privateKeyPath: args.peer[0]
+      });
   }
 } else {
   // Not given any `-peer` command line option, create peer key pair
   createdPeer = true;
-  peerPrivate = new NodeRSA({b: keySize});
-  peerPublic = new NodeRSA(peerPrivate.exportKey("public"));
+  peerRSAKeyPair = (new RSAKeyPair()).generate({ modulusLength: keySize });
 }
 
-debug(`Signing peer public with ring private...`);
+// Export the ring keys
+debug(`Exporting ring RSA keys...`);
+const ringKeys = 
+  ringRSAKeyPair.export({ mode: 'both', returnBuffer: true });
+
+// Export the peer keys
+debug(`Exporting peer RSA keys...`);
+const peerKeys = 
+  peerRSAKeyPair.export({ mode: 'both', returnBuffer: true });
 
 // Sign peer public, write the signature to file
-fs.writeFileSync(fileName + ".peer.signature", ringPrivate.sign(peerPublic.exportKey('public')));
+debug(`Signing peer public key with ring private key...`);
+const peerSignatureBuffer = ringRSAKeyPair.sign(peerKeys.public);
+const peerSignature = peerSignatureBuffer.toString('hex');
+
+console.log(`\t${peerSignature}`);
+
+// Write our peer signature to file system
+debug(`Writing peer signature to file system...`);
+fs.writeFileSync(fileName + ".peer.signature", peerSignature, 'utf8');
 debug(`\t${fileName}.peer.signature`);
 
 if(createdRing) {
   // Write our ring key pair to file system
   debug(`Writing ring keys to file system...`);
-  fs.writeFileSync(".ring.pem", ringPrivate.exportKey('private'));
+
+  fs.writeFileSync(".ring.pem", ringKeys.private, 'utf8');
   debug(`\t.ring.pem`);
-  fs.writeFileSync(".ring.pub", ringPublic.exportKey('public'));
+
+  fs.writeFileSync(".ring.pub", ringKeys.public, 'utf8');
   debug(`\t.ring.pub`);
 }
 
 if(createdPeer) {
   // Write our peer key pair to file system
   debug(`Writing peer keys to file system...`);
-  fs.writeFileSync(fileName + ".peer.pem", peerPrivate.exportKey('private'));
+
+  fs.writeFileSync(fileName + ".peer.pem", peerKeys.private, 'utf8');
   debug(`\t${fileName}.peer.pem`);
-  fs.writeFileSync(fileName + ".peer.pub", peerPublic.exportKey('public'));
+
+  fs.writeFileSync(fileName + ".peer.pub", peerKeys.public, 'utf8');
   debug(`\t${fileName}.peer.pub`);
 }
 

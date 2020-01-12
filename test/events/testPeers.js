@@ -17,7 +17,7 @@ test("EventsOnPeers", (assert) => {
 	let testPeer = {
 		debug: false,
 		getPeerList: () => testPeerList,
-		privateKey: {
+		peerRSAKeyPair: {
 			sign: (s) => s.split("").reverse().join("")
 		},
 		managedTimeouts: {

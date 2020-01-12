@@ -53,11 +53,14 @@ var p = new Peer({
 var isReady = false;
 p.on('ready', () => {
   isReady = true;
+  readInterface.prompt();
 });
 
 p.on('msg', ({ message, connection }) => {
   // TODO: Do something with the message (Update DB, Blockchain, etc...)
-  console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
+  // console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
+  console.log(`[${connection.originalAddress}:${connection.originalPort}]: ` + 
+    `${message.body.text}`);
   readInterface.prompt();
 });
 
@@ -77,30 +80,37 @@ if(!args.d || args.d.length < 1) {
         p.close();
         readInterface.close(); //close return
         process.exit(0);
-      } else if(line == 'peers') {
-        console.log(`\n\n${JSON.stringify(p.getPeerList())}\n\n`);
-      } else if(line == 'queue') {
-        console.log(`\n\n${JSON.stringify(queue)}\n\n`);
-      } else if(line == 'queue on') {
+      } else if(line == '/peers') {
+        console.log(p.getPeerList());
+      } else if(line == '/queue') {
+        console.log(queue);
+      } else if(line == '/queue on') {
         canSend = false;
-      } else if(line == 'queue off') {
+        console.log(`Queue is now on.`);
+      } else if(line == '/queue off') {
         canSend = true;
-      } else if(line == 'queue send' || line == 'send') {
+        console.log(`Queue is now off.`);
+      } else if(line == '/queue send' || line == '/send') {
         // Send all the queued messages
-        while(queue.length > 0)
-          p.broadcast({ message: queue.splice(0,1)[0] });
-      } else if(line == 'toString()') {
-        console.log(p.toString());
+        while(queue.length > 0) {
+          const message = queue.splice(0,1)[0];
+          p.broadcast({ message });
+        }
+      } else if(line == '/self') {
+        console.log(JSON.parse(p.toString()));
       } else {
         var message = new Message({
           type: 'msg',
-          body: { 'text': line  }
+          body: {
+            'text': line
+          }
         });
         
-        if(isReady && canSend)
+        if(isReady && canSend) {
           p.broadcast({ message });
-        else
+        } else {
           queue.push(message);
+        }
       }
     }
     

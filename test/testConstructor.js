@@ -89,7 +89,7 @@ test("PeerConstructor", (assert) => {
   options = copyObject(constructorOptions);
   delete options.privateKey;
   assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid Peer Private Key file location (given: peer.pem).",
+    "Invalid Peer Private Key file location (given: null).",
     "Constructor when missing privateKey should throw error.");
   
   assert.end();  

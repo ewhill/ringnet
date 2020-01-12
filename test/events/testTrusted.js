@@ -30,7 +30,7 @@ test("EventsOnTrusted", (assert) => {
 		debug: false,
 		discover: discoverHandler,
 		discoveryAddresses: [],
-		privateKey: {},
+		peerRSAKeyPair: {},
 		emit: emitHandler,
 		inDiscoveryAddresses: () => false,
 		isConnectedTo: () => false,
@@ -50,7 +50,7 @@ test("EventsOnTrusted", (assert) => {
 		}
 	};
 
-	testPeer.privateKey.decrypt = () => { throw new Error("test!"); };
+	testPeer.peerRSAKeyPair.decrypt = () => { throw new Error("test!"); };
 
 	let invalidIvKeyResult = onTrusted.apply(testPeer, 
 		[{ message: testMessage, connection: testConnection }]);
@@ -58,7 +58,7 @@ test("EventsOnTrusted", (assert) => {
 	assert.notOk(invalidIvKeyResult, "When message body IV/Key " +
 		"decrypt fails handler exits gracefully.");
 
-	testPeer.privateKey.decrypt = (data) => data;
+	testPeer.peerRSAKeyPair.decrypt = (data) => data;
 
 	testMessage.body.listening.address = testValidAddress;
 	testMessage.body.listening.port = testValidPort.toString();
