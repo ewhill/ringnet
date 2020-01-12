@@ -1,6 +1,6 @@
 {
   "name": "ringnet",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "homepage": "https://github.com/ewhill/ringnet",
   "description": "A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.",
   "main": "index.js",
