@@ -122,6 +122,7 @@ var tests = [{
             - signaturesToOmit argument
           - peer.toString()
       */
+
       next();
     }
   }

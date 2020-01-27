@@ -10,15 +10,15 @@ const { Peer, Message } = require('../index.js');
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 
-test("PeerBYOServerTest", (assert) => {
+test("PeerBYOHTTPSServerTest", (assert) => {
   //Create a server
   var server = https.createServer({
-    key: fs.readFileSync('https.key.pem'),
-    cert: fs.readFileSync('https.cert.pem')
-  }, (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('BYOHTTPSServer');
-  });
+      key: fs.readFileSync('https.key.pem'),
+      cert: fs.readFileSync('https.cert.pem')
+    }, (req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('BYOHTTPSServer');
+    });
   
   //Start server
   server.listen(8181, function() {
