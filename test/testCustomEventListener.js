@@ -16,7 +16,7 @@ test("PeerCustomEventListener", (assert) => {
     'publicKey': "first.peer.pub",
     'privateKey': "first.peer.pem",
     'ringPublicKey': ".ring.pub",
-    'debug': false
+    'debug': true
   });
   
   peer1.on('connection', ({ connection }) => {

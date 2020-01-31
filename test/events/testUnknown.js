@@ -19,7 +19,7 @@ test("EventsOnUnknown", (assert) => {
 		Buffer.from("{\"test\":\"testing!\"}", 'utf8').toString('base64');
 
 	let testConnection = {
-		peerPublicKey: {},
+		peerRSAKeyPair: {},
 		requireConfirmation: true
 	};
 
@@ -79,15 +79,15 @@ test("EventsOnUnknown", (assert) => {
 		};
 	};
 
-	testConnection.peerPublicKey.verify = () => { throw new Error("test!"); };
+	testConnection.peerRSAKeyPair.verify = () => { throw new Error("test!"); };
 	onUnknown.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection}]);
 
-	testConnection.peerPublicKey.verify = () => false;
+	testConnection.peerRSAKeyPair.verify = () => false;
 	onUnknown.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection}]);
 
-	testConnection.peerPublicKey.verify = () => true;
+	testConnection.peerRSAKeyPair.verify = () => true;
 	onUnknown.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection}]);
 
