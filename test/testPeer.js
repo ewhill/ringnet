@@ -241,11 +241,15 @@ test("PeerTest", (assert) => {
           /* assert.comment(`Sending ${p} message: ` +
               `${oneTest[p].send[i].toString()}`); */
               
-          // Simple switch -- which peer are we looking at
-          if(p == "peer1") {
-            peer1.broadcast(oneTest[p].send[i]);
-          } else if(p == "peer2") {
-            peer2.broadcast(oneTest[p].send[i]);
+          try {
+            // Simple switch -- which peer are we looking at
+            if(p == "peer1") {
+              peer1.broadcast(oneTest[p].send[i]);
+            } else if(p == "peer2") {
+              peer2.broadcast(oneTest[p].send[i]);
+            }
+          } catch(e) {
+            console.error(e.stack);
           }
         }
       }

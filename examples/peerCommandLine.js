@@ -94,7 +94,12 @@ if(!args.d || args.d.length < 1) {
         // Send all the queued messages
         while(queue.length > 0) {
           const message = queue.splice(0,1)[0];
-          p.broadcast({ message });
+          try {
+            p.broadcast({ message });
+          } catch(e) {
+            console.error(e.message);
+            console.error(e.stack);
+          }
         }
       } else if(line == '/self') {
         console.log(JSON.parse(p.toString()));
@@ -107,7 +112,12 @@ if(!args.d || args.d.length < 1) {
         });
         
         if(isReady && canSend) {
-          p.broadcast({ message });
+          try {
+            p.broadcast({ message });
+          } catch(e) {
+            console.error(e.message);
+            console.error(e.stack);
+          }
         } else {
           queue.push(message);
         }

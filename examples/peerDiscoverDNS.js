@@ -121,16 +121,25 @@ return task
             canSend = true;
           } else if(line == 'queue send' || line == 'send') {
             // Send all the queued messages
-            while(queue.length > 0)
-              p.broadcast({ message: queue.splice(0,1)[0] });
+            try {
+              while(queue.length > 0)
+                p.broadcast({ message: queue.splice(0,1)[0] });
+            } catch(e) {
+              console.error(e.stack);
+            }
           } else {
             var message = new Message({
               type: "cliMessage",
               body: { 'data': line }
             });
             
-            if(isReady && canSend)
-              p.broadcast({ message });
+            if(isReady && canSend) {
+              try {
+                p.broadcast({ message });
+              } catch(e) {
+                console.error(e.stack);
+              }
+            }
             else
               queue.push(message);
           }

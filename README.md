@@ -157,7 +157,11 @@ var message = new Message({
 });
 
 // Broadcast the message to all connected, verified peers
-peer.broadcast({ message });
+try {
+  peer.broadcast({ message });
+} catch(e) {
+  console.error(e.stack);
+}
 ```
 
 ### Listening for Messages

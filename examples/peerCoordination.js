@@ -65,7 +65,11 @@ const broadcastTake = (peer, jobs) => {
   console.log(`${peer.port} is ` + 
     `sending take message: ${takeMessage}`);
   
-  peer.broadcast(takeMessage);
+  try {
+    peer.broadcast(takeMessage);
+  } catch(e) {
+    console.error(e.stack);
+  }
 };
 
 const takeRequestHandler = (peer, { message, connection }) => {
@@ -136,7 +140,11 @@ const takeRequestHandler = (peer, { message, connection }) => {
   console.log(`\t${peer.port} is sending 'takeResult' ` + 
       `message back to peer: ${takeResultMessage}`);
   
-  peer.broadcast(takeResultMessage, connection);
+  try {
+    peer.broadcast(takeResultMessage, connection);
+  } catch(e) {
+    console.error(e.stack);
+  }
 };
 
 const takeResultHandler = (peer, { message, connection }) => {

@@ -20,10 +20,14 @@ test("PeerCustomEventListener", (assert) => {
   });
   
   peer1.on('connection', ({ connection }) => {
-    peer1.broadcast(new Message({
-      type: "Cu570m_M3554g3",
-      body: "Hey, let's test this custom event listener!"
-    }));
+    try {
+      peer1.broadcast(new Message({
+        type: "Cu570m_M3554g3",
+        body: "Hey, let's test this custom event listener!"
+      }));
+    } catch(e) {
+      console.error(e.stack);
+    }
   });
   
   peer1.on('ready', () => {
