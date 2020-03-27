@@ -9,88 +9,100 @@ const { Peer, Message } = require('../index.js');
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 
-test("PeerConstructor", (assert) => {
-
+test("PeerConstructor", async (assert) => {
+  let testPromises = [];
   let copyObject = (o) => JSON.parse(JSON.stringify(o));
 
-  assert.throwsErrorWithMessage = (fn, msg, text) => {
+  const constructorThrowsWithMessage = async (options, msg, text) => {
+    let errorMessage = null;
+    let peer = new Peer(options);
+
     try {
-      fn();
-      assert.fail(text);
+      await peer.init();
+      await peer.close();
     } catch(e) {
-      assert.equals(e.message, msg, text);
+      errorMessage = e.message;
     }
-  }
+    
+    assert.equals(errorMessage, msg, text);
+  };
 
   let constructorOptions = {
-    'credentials': {
-      'key': "https.key.pem",
-      'cert': "https.cert.pem"
+    credentials: {
+      key: "https.key.pem",
+      cert: "https.cert.pem"
     },
-    'port': 26788,
-    'discoveryAddresses': [ "127.0.0.1:26780" ],
-    'signature': "first.peer.signature",
-    'publicKey': "first.peer.pub",
-    'privateKey': "first.peer.pem",
-    'ringPublicKey': ".ring.pub",
-    'debug': false,
-    'range': [26780, 26790],
-    'startDiscovery': false,
-    'requireConfirmation': true
+    port: 26788,
+    discoveryAddresses: [ "127.0.0.1:26780" ],
+    signature: "first.peer.signature",
+    publicKey: "first.peer.pub",
+    privateKey: "first.peer.pem",
+    ringPublicKey: ".ring.pub",
+    range: [26780, 26790],
   };
 
   let options, peer;
 
-  // Missing peer `ringPublicKey`:
-  options = copyObject(constructorOptions);
-  delete options.ringPublicKey;
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(), 
-    "Invalid Ring Public Key file location (given: ring.pub).",
-    "Constructor when missing ringPublicKey should throw error.");
+  try {
 
-  // Missing peer `signature`:
-  options = copyObject(constructorOptions);
-  delete options.signature;
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid Signature file location (given: peer.signature).",
-    "Constructor when missing signature should throw error.");
+    // Missing peer `ringPublicKey`:
+    let missingRingPublicKeyOptions = copyObject(constructorOptions);
+    delete missingRingPublicKeyOptions.ringPublicKey;
+    await constructorThrowsWithMessage(missingRingPublicKeyOptions,
+      "File does not exist: \'ring.pub\'!",
+      "Constructor when missing ringPublicKey should throw error.");
 
-  // Missing/invalid peer `credentials`.`key`:
-  options = copyObject(constructorOptions);
-  options.credentials.key = "KeyDoesNotExist";
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid HTTPS Server Key file location (given: KeyDoesNotExist).",
-    "Constructor when given invalid credentials.key should throw error.");
+    // Missing peer `signature`:
+    let missingSignatgureOptions = copyObject(constructorOptions);
+    delete missingSignatgureOptions.signature;
+    await constructorThrowsWithMessage(missingSignatgureOptions,
+      "File does not exist: \'peer.signature\'!",
+      "Constructor when missing signature should throw error.");
 
-  // Missing/invalid peer `credentials`.`key`:
-  options = copyObject(constructorOptions);
-  options.credentials.cert = "CertDoesNotExist";
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid HTTPS Server Certificate file location (given: CertDoesNotExist).",
-    "Constructor when given invalid credentials.cert should throw error.");
+    // Missing/invalid peer `credentials`.`key`:
+    let missingCredentialsKeyOptions = copyObject(constructorOptions);
+    missingCredentialsKeyOptions.credentials.key = "KeyDoesNotExist";
+    await constructorThrowsWithMessage(missingCredentialsKeyOptions,
+      "File does not exist: \'KeyDoesNotExist\'!",
+      "Constructor when given invalid credentials.key should throw error.");
 
-  // Incorrect peer `signature`:
-  options = copyObject(constructorOptions);
-  options.signature = "second.peer.signature";
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid signature for given peer public key and ring public key.",
-    "Constructor when given incorrect signature should throw error.");
+    // Missing/invalid peer `credentials`.`cert`:
+    let missingCredentialsCertOptions = copyObject(constructorOptions);
+    missingCredentialsCertOptions.credentials.cert = "CertDoesNotExist";
+    await constructorThrowsWithMessage(missingCredentialsCertOptions,
+      "File does not exist: \'CertDoesNotExist\'!",
+      "Constructor when given invalid credentials.cert should throw error.");
 
-  // Missing peer `publicKey`:
-  options = copyObject(constructorOptions);
-  delete options.publicKey;
-  peer = new Peer(options);
-  assert.notEqual(peer.publicKey, null, 
-    "Constructor when not given publicKey, but given privateKey should " +
-    "derrive publicKey from privateKey.");
-  peer.close();
+    // Incorrect peer `signature`:
+    let incorrectSignatureOptions = copyObject(constructorOptions);
+    incorrectSignatureOptions.signature = "second.peer.signature";
+    await constructorThrowsWithMessage(incorrectSignatureOptions,
+      "Invalid signature for given peer public key and ring public key.",
+      "Constructor when given incorrect signature should throw error.");
 
-  // Missing peer `privateKey`:
-  options = copyObject(constructorOptions);
-  delete options.privateKey;
-  assert.throwsErrorWithMessage(() => (new Peer(options)).close(),
-    "Invalid Peer Private Key file location (given: null).",
-    "Constructor when missing privateKey should throw error.");
-  
-  assert.end();  
+    // Missing peer `privateKey`:
+    let missingPrivateKeyOptions = copyObject(constructorOptions);
+    delete missingPrivateKeyOptions.privateKey;
+    await constructorThrowsWithMessage(missingPrivateKeyOptions,
+      "Invalid path!",
+      "Constructor when missing privateKey should throw error.");
+
+    // Missing peer `publicKey`:
+    let missingPublicKeyOptions = copyObject(constructorOptions);
+    delete missingPublicKeyOptions.publicKey;
+    peer = new Peer(missingPublicKeyOptions);
+
+    await peer.init();
+
+    assert.notEqual(peer.publicKey, null, 
+      "Constructor when not given publicKey, but given privateKey should " +
+      "derrive publicKey from privateKey.");
+
+    await peer.close();
+  } catch(e) {
+    console.error(e.stack);
+  }
+
+  assert.ok('hello world');
+  assert.end();
 });

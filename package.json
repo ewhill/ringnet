@@ -33,10 +33,11 @@
   },
   "license": "MIT",
   "dependencies": {
+    "handlebars": "^4.5.3",
     "ws": "^6.2.1"
   },
   "devDependencies": {
-    "istanbul": "^0.4.5",
-    "tape": "^4.10.1"
+    "istanbul": "^1.0.0-alpha.2",
+    "tape": "^4.13.2"
   }
 }

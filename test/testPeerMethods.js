@@ -4,59 +4,42 @@ const test = require('tape');
 
 const { Peer, Message } = require('../index.js');
 
-// Create peer1, the first peer, which will listen on port 26780
-let peer = new Peer({
-  'port': 9999,
-  'signature': "first.peer.signature",
-  'publicKey': "first.peer.pub",
-  'privateKey': "first.peer.pem",
-  'ringPublicKey': ".ring.pub",
-  'debug': false
-});
-
-const waitForDiscoveredEvent = () => {
-	return ;
-};
-
 test("PeerTest", async (assert) => {
-	const assertThrows = (fn, args, msg) => {
-		let errorWasThrown = false;
+	// Create peer1, the first peer, which will listen on port 26780
+	let peer = new Peer({
+	  port: 9999,
+	  signature: "first.peer.signature",
+	  publicKey: "first.peer.pub",
+	  privateKey: "first.peer.pem",
+	  ringPublicKey: ".ring.pub"
+	});
+
+	const assertThrows = async (fn, thisArg, args, msg) => {
+		let didThrow = false;
 
 		try {
-			fn.apply(null, args);
+			await fn.apply(thisArg, args);
 		} catch(e) {
-			errorWasThrown = true;
+			didThrow = true;
 		}
 
-		assert.true(errorWasThrown, msg);
+		assert.true(didThrow, msg);
 	};
 
-	assertThrows(peer.createHttpServer, [], 
-		`Attempting to create a HttpServer without credentials should throw.`);
+	await peer.init();
 
-	assertThrows(peer.enqueueDiscoveryAddress, [], 
-		`Attempting to enqueue an invalid address for discovery should throw.`);
-
-	peer.range = null;
-	peer.discoveryAddresses = [{ address: '127.0.0.1' }];
 	let lastAddress = null;
-
-	peer.attemptConnection = (address) => {
-		lastAddress = address;
+	peer.attemptConnection = (originalAddress, parsedAddress) => {
+		lastAddress = originalAddress;
 		return Promise.resolve();
 	};
 
-	const discoveryPromise = new Promise((resolve) => {
-		peer.on('discovered', resolve);
-	});
+	peer.range_ = null;
+	peer.discoveryAddresses_ = [{ address: '127.0.0.1' }];
 
-	peer.discover();
+	await peer.discover();
 
-	await discoveryPromise;
-
-	console.log(lastAddress);
-
-	assert.equals(lastAddress.slice(-4), peer.port.toString(), 
+	assert.equals(lastAddress.slice(-4), peer.port_.toString(), 
 		`Discovering of address without a port should assign the discovery ` + 
 		`address a port the same as the peer's.`);
 
@@ -64,18 +47,50 @@ test("PeerTest", async (assert) => {
 		`Discovering of address without a protocol should assign the WebSocket ` + 
 		`protocol string.`);
 
-	assertThrows(peer.broadcastTo, [], `Attempting to call broadcastTo ` + 
+	const testPeerSignature = 'aaa';
+	const testPeerConnection = {
+		signature: testPeerSignature.toString('hex'),
+		peerPublicKeySignature: testPeerSignature
+	};
+	const testPeer = { connection: testPeerConnection };
+	peer.peers_ = 
+		[{ ...testPeer }];
+
+	assert.true(peer.isConnectedTo(testPeerConnection), 
+		`Properly reports if peer is connected to another peer.`);
+
+	await assertThrows(peer.discoverPeer, peer, [testPeer], 
+		`Attempting to discover on peer to which this peer has already ` + 
+		`connected should throw.`);
+
+	const testPeerSignatureBuffer = new Buffer(testPeerSignature, 'utf8');
+	peer.signature_ = testPeerSignatureBuffer;
+	assert.true(peer.isOwnSignature(testPeerSignatureBuffer), 
+		`Properly reports if given signature is equal to peer's own.`);
+
+	peer.peers_ = [];
+	await assertThrows(peer.discoverPeer, peer, [testPeer], 
+		`Attempting to discover on peer to which has signature equal ` + 
+		`to this peer's signature should throw.`);
+	
+	await assertThrows(peer.createHttpServer, peer, [], 
+		`Attempting to create a HttpServer without credentials should throw.`);
+
+	await assertThrows(peer.enqueueDiscoveryAddress, peer, [], 
+		`Attempting to enqueue an invalid address for discovery should throw.`);
+
+	await assertThrows(peer.broadcastTo, peer, [], `Attempting to call broadcastTo ` + 
 		`without connection or message should throw`);
 
 	const testHeloMessage = new Message({ type: 'bleh' });
 	let testConnection = { connected: false };
 
-	assertThrows(peer.broadcastTo, [testConnection, testHeloMessage], 
+	await assertThrows(peer.broadcastTo, peer, [testConnection, testHeloMessage], 
 		`Attempting to broadcast to not opened connection should throw.`);
 
 	testConnection = { connected: true, trusted: false };
 
-	assertThrows(peer.broadcastTo, [testConnection, testHeloMessage], 
+	await assertThrows(peer.broadcastTo, peer, [testConnection, testHeloMessage], 
 		`Attempting to call broadcastTo on untrusted connection and ` + 
 		`without message being helo should throw.`);
 
@@ -87,8 +102,10 @@ test("PeerTest", async (assert) => {
 
 	testConnection = {
 		_socket: { remotePort: 1337 },
+		connected: true,
 		on: function(event, callback) {},
-		send: function() {}
+		send: function() {},
+		close: ()=>{}
 	};
 	let testRequest = {
 		httpRequest: {
@@ -106,7 +123,8 @@ test("PeerTest", async (assert) => {
 	testRequest = {
 		connection: {
 			remoteAddress: 'boop'
-		}
+		},
+		close: ()=>{}
 	};
 
 	peer.setupConnection({ connection: testConnection, request: testRequest });
@@ -114,6 +132,6 @@ test("PeerTest", async (assert) => {
 		`connection with request containing connection with 'remoteAddress' ` + 
 		`property should set the connection 'originalAddress' property.`);
 
-	peer.close();
+	await peer.close();
 	assert.end();
 });

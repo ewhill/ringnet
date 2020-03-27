@@ -127,17 +127,17 @@ test("EventsOnHelo", (assert) => {
 	let testPublicAddress = 'blah';
 
 	let testPeer = {
-		debug: false,
+		isDebugEnabled_: false,
 		getPeerList: () => testPeerList,
 		isOwnSignature: isOwnSignatureHandler,
-		managedTimeouts: {
+		managedTimeouts_: {
 			setTimeout: (f, d) => f()
 		},
-		port: testPort,
-		peerRSAKeyPair: new RSAKeyPair({ privateKeyBuffer: testPrivateKey }),
-		publicAddress: testPublicAddress,
-		requireConfirmation : false,
-		ringRSAKeyPair: new RSAKeyPair({ publicKeyBuffer: testPublicKey }),
+		port_: testPort,
+		peerRSAKeyPair_: new RSAKeyPair({ privateKeyBuffer: testPrivateKey }),
+		publicAddress_: testPublicAddress,
+		requireConfirmation_ : false,
+		ringRSAKeyPair_: new RSAKeyPair({ publicKeyBuffer: testPublicKey }),
 	};
 
 	let testConnection = {
@@ -161,8 +161,8 @@ test("EventsOnHelo", (assert) => {
 
 	testForOwnSignature = false;
 
-	let oldVerify = testPeer.ringRSAKeyPair.verify;
-	testPeer.ringRSAKeyPair.verify = () => { throw new Error("test!"); };
+	let oldVerify = testPeer.ringRSAKeyPair_.verify;
+	testPeer.ringRSAKeyPair_.verify = () => { throw new Error("test!"); };
 
 	let verifyResult = onHelo.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection }]);
@@ -170,7 +170,7 @@ test("EventsOnHelo", (assert) => {
 	assert.notOk(verifyResult, "When key verification fails, error "  +
 		"should be gracefully caught and function should return false.");
 
-	testPeer.ringRSAKeyPair.verify = () => { return true; };
+	testPeer.ringRSAKeyPair_.verify = () => { return true; };
 
 	onHelo.apply(testPeer, [{ message: testMessage, 
 		connection: testConnection }]);

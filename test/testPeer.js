@@ -133,30 +133,19 @@ var tests = [{
 
 // Create peer1, the first peer, which will listen on port 26780
 let peer1 = new Peer({
-  'port': 26780,
-  'signature': "first.peer.signature",
-  'publicKey': "first.peer.pub",
-  'privateKey': "first.peer.pem",
-  'ringPublicKey': ".ring.pub",
-  'debug': false
+  port: 26780,
+  signature: "first.peer.signature",
+  publicKey: "first.peer.pub",
+  privateKey: "first.peer.pem",
+  ringPublicKey: ".ring.pub",
 });
 
-// Create the second peer, peer2, listening on 26781
-let peer2 = new Peer({
-  'port': 26781,
-  'discoveryAddresses': [ "127.0.0.1:26780" ],
-  'signature': "second.peer.signature",
-  'publicKey': "second.peer.pub",
-  'privateKey': "second.peer.pem",
-  'ringPublicKey': ".ring.pub",
-  'debug': false,
-  'startDiscovery': false
-});
+let peer2;
 
 // ===========================================================================
 // ===========================================================================
 
-test("PeerTest", (assert) => {
+test("PeerTest", async (assert) => {
   
   var popTest = () => {
     if(tests.length > 0) {
@@ -169,7 +158,7 @@ test("PeerTest", (assert) => {
   // =========================================================================
   // =========================================================================
   
-  var nextTest = () => {
+  var nextTest = async () => {
     var oneTest = popTest();
     
     if(oneTest) {
@@ -177,8 +166,8 @@ test("PeerTest", (assert) => {
     } else {
       // We've reached the end of 'tests' array, thus our testing is complete
       // and we can call assert.end() to close the tape testing.
-      peer2.close();
-      peer1.close();
+      await peer2.close();
+      await peer1.close();
       assert.end();
     }
   };
@@ -258,23 +247,21 @@ test("PeerTest", (assert) => {
   
   // =========================================================================
   // =========================================================================
-  
-  var go = () => {
-    // Once peer1 starts accepting connections (denoted by the 'ready' event), 
-    // peer2 can discover peer1 on its address (localhost) and port (26780).
-    
-    // Once a trusted connection has been received by peer2, start testing
-    peer2.on('connection', nextTest);
-    
-    peer2.discover();
-  };
+  // 
+  peer1.on('connection', nextTest);
 
-  // We may already be ready at this point, so check
-  if(peer1.ready) {
-    // Underyling HTTP Server is ready, call 'go'
-    go();
-  } else {
-    // Underlying HTTP Server isn't ready yet; listen for when it is
-    peer1.on('ready', go);
-  }
+  await peer1.init();
+
+  // Create the second peer, peer2, listening on 26781
+  peer2 = new Peer({
+    port: 26781,
+    signature: "second.peer.signature",
+    publicKey: "second.peer.pub",
+    privateKey: "second.peer.pem",
+    ringPublicKey: ".ring.pub",
+    discoveryAddresses: [ "127.0.0.1:26780" ],
+  });
+
+  await peer2.init();
+  await peer2.discover();
 });

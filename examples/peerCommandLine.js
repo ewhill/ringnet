@@ -42,7 +42,7 @@ var p = new Peer({
   'ringPublicKey': args.ring,
   'signature': args.signature,
   'range': args.range,
-  'requireConfirmation': args.requireConfirmation || args.rc
+  'conrirmMessages': args.requireConfirmation || args.rc
 });
 
 // ----------------------------------------------------------------------------------
@@ -50,83 +50,85 @@ var p = new Peer({
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 
-var isReady = false;
-p.on('ready', () => {
-  isReady = true;
-  readInterface.prompt();
-});
+(async () => {
+  try {
+    await p.init();
+    await p.discover();
+  } catch(e) {
+    console.error(e.stack);
+    process.exit(1);
+  }
 
-p.on('msg', ({ message, connection }) => {
-  // TODO: Do something with the message (Update DB, Blockchain, etc...)
-  // console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
-  console.log(`[${connection.originalAddress}:${connection.originalPort}]: ` + 
-    `${message.body.text}`);
-  readInterface.prompt();
-});
-
-if(!args.d || args.d.length < 1) {
-  var queue = [];
-  var canSend = true;
-  
-  p.on('discovered', () => {
+  p.on('msg', ({ message, connection }) => {
+    // TODO: Do something with the message (Update DB, Blockchain, etc...)
+    // console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
+    console.log(`[${connection.originalAddress}:${connection.originalPort}]: ` + 
+      `${message.body.text}`);
     readInterface.prompt();
   });
 
-  readInterface.on('line', (line) => {
-    if(line && line.toString().length > 0) {
-      line = line.toString();
-      
-      if(line == 'exit') { // User typed 'exit'
-        p.close();
-        readInterface.close(); //close return
-        process.exit(0);
-      } else if(line == '/peers') {
-        console.log(p.getPeerList());
-      } else if(line == '/queue') {
-        console.log(queue);
-      } else if(line == '/queue on') {
-        canSend = false;
-        console.log(`Queue is now on.`);
-      } else if(line == '/queue off') {
-        canSend = true;
-        console.log(`Queue is now off.`);
-      } else if(line == '/queue send' || line == '/send') {
-        // Send all the queued messages
-        while(queue.length > 0) {
-          const message = queue.splice(0,1)[0];
-          try {
-            p.broadcast({ message });
-          } catch(e) {
-            console.error(e.message);
-            console.error(e.stack);
-          }
-        }
-      } else if(line == '/self') {
-        console.log(JSON.parse(p.toString()));
-      } else {
-        var message = new Message({
-          type: 'msg',
-          body: {
-            'text': line
-          }
-        });
+  if(!args.d || args.d.length < 1) {
+    var queue = [];
+    var canSend = true;
+
+    readInterface.on('line', (line) => {
+      if(line && line.toString().length > 0) {
+        line = line.toString();
         
-        if(isReady && canSend) {
-          try {
-            p.broadcast({ message });
-          } catch(e) {
-            console.error(e.message);
-            console.error(e.stack);
+        if(line == 'exit') { // User typed 'exit'
+          p.close();
+          readInterface.close(); //close return
+          process.exit(0);
+        } else if(line == '/peers') {
+          console.log(p.getPeerList());
+        } else if(line == '/queue') {
+          console.log(queue);
+        } else if(line == '/queue on') {
+          canSend = false;
+          console.log(`Queue is now on.`);
+        } else if(line == '/queue off') {
+          canSend = true;
+          console.log(`Queue is now off.`);
+        } else if(line == '/queue send' || line == '/send') {
+          // Send all the queued messages
+          while(queue.length > 0) {
+            const message = queue.splice(0,1)[0];
+            try {
+              p.broadcast({ message });
+            } catch(e) {
+              console.error(e.message);
+              console.error(e.stack);
+            }
           }
+        } else if(line == '/self') {
+          console.log(JSON.parse(p.toString()));
         } else {
-          queue.push(message);
+          var message = new Message({
+            type: 'msg',
+            body: {
+              'text': line
+            }
+          });
+          
+          if(isReady && canSend) {
+            try {
+              p.broadcast({ message });
+            } catch(e) {
+              console.error(e.message);
+              console.error(e.stack);
+            }
+          } else {
+            queue.push(message);
+          }
         }
       }
-    }
-    
-    readInterface.prompt();
-  });
-}
+      
+      readInterface.prompt();
+    });
+  }
+
+  readInterface.prompt();
+})();
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------

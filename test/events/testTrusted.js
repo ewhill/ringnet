@@ -12,14 +12,8 @@ const onTrusted = require('../../lib/src/events/trusted');
 
 test("EventsOnTrusted", (assert) => {
 	let didDiscover = false;
-	let discoverHandler = () => {
-		didDiscover = true;
-	};
-
 	let connectionWasEmitted = false;
-	let emitHandler = (e, d) => {
-		connectionWasEmitted = (e === "connection");
-	};
+	let parsedAddresses = [];
 
 	let testInvalidAddress = 7;
 	let testValidAddress = "testAddress";
@@ -27,30 +21,37 @@ test("EventsOnTrusted", (assert) => {
 	let testValidPort = 1234;
 
 	let testPeer = {
-		debug: false,
-		discover: discoverHandler,
-		discoveryAddresses: [],
-		peerRSAKeyPair: {},
-		emit: emitHandler,
+		isDebugEnabled_: false,
+		discover: () => {
+			didDiscover = true;
+		},
+		discoveryAddresses_: [],
+		parseDiscoveryAddresses: (obj) => {
+			parsedAddresses.push(obj);
+		},
+		peerRSAKeyPair_: {},
+		reservedEventHandlers_: {
+			connection: () => {
+				connectionWasEmitted = true;
+			}
+		},
 		inDiscoveryAddresses: () => false,
 		isConnectedTo: () => false,
-		isOwnSignature: () => false
+		isOwnSignature: () => false,
+		untrustedConnections_: {}
 	};
 
-	let testConnection = {
-		requireConfirmation: false
-	};
+	let testConnection = {};
 
 	let testMessage = {
 		body: {
 			iv: "testing".toString('base64'),
 			key: "123!".toString('base64'),
-			requireConfirmation: true,
 			listening: {}
 		}
 	};
 
-	testPeer.peerRSAKeyPair.decrypt = () => { throw new Error("test!"); };
+	testPeer.peerRSAKeyPair_.decrypt = () => { throw new Error("test!"); };
 
 	let invalidIvKeyResult = onTrusted.apply(testPeer, 
 		[{ message: testMessage, connection: testConnection }]);
@@ -58,7 +59,7 @@ test("EventsOnTrusted", (assert) => {
 	assert.notOk(invalidIvKeyResult, "When message body IV/Key " +
 		"decrypt fails handler exits gracefully.");
 
-	testPeer.peerRSAKeyPair.decrypt = (data) => data;
+	testPeer.peerRSAKeyPair_.decrypt = (data) => data;
 
 	testMessage.body.listening.address = testValidAddress;
 	testMessage.body.listening.port = testValidPort.toString();
@@ -68,9 +69,6 @@ test("EventsOnTrusted", (assert) => {
 
 	assert.ok(connectionWasEmitted, "When body has correct content " + 
 		"a 'connection' event should be emitted.");
-
-	assert.ok(testConnection.requireConfirmation, "Connection " + 
-		"should require confirmation if message body requests such.");
 
 	assert.equal(testConnection.originalPort, testValidPort, "Message " + 
 		"containing listening port should be correctly parsed from " +
@@ -97,11 +95,11 @@ test("EventsOnTrusted", (assert) => {
 		"Message containing listening address with type other than " + 
 		"string value should NOT set originalAddress.");
 
-	assert.equal(testPeer.discoveryAddresses.length, 1, "Message " + 
+	assert.equal(parsedAddresses.length, 1, "Message " + 
 		"with valid peers property should result in peer adding " + 
 		"message peers to discoveryAddresses.");
 
-	assert.equal(JSON.stringify(testPeer.discoveryAddresses), 
+	assert.equal(JSON.stringify(parsedAddresses[0]), 
 		JSON.stringify(testMessage.body.peers), 
 		"Message with valid peers property should result in peer " + 
 		"adding message peers to discoveryAddresses.");
