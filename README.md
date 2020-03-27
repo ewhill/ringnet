@@ -41,6 +41,9 @@ var peer = new Peer(options);
 #### **httpsServer** (object)
   - *Optional*, defaults to `false`.
   - If provided, the peer will use the given HTTPS Server for creation of the underyling WebSocket server.
+#### **httpsServerMode** (enum)
+  - *Optional*, defaults to `HTTPS_SERVER_MODES.CREATE`,
+  - See all available HTTPS server modes in `./lib/src/httpsServerModes.js`
 #### **port** (integer)
   - *Optional*, defaults to `DSCVRY_LISTEN` environment variable with a fallback of `26780`
   - The port that the created peer will listen on, accepting new requests via HTTP server and WebSocket connections
@@ -53,20 +56,12 @@ var peer = new Peer(options);
 #### **publicKey** (string)
   - *Optional*, defaults to `peer.pub`
   - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network. If missing, the publicKey will attempt to be derrived from privateKey, if privateKey is given and valid. 
-#### **requireConfirmation** (boolean)
-  - *Optional*, defaults to `true`
-  - If set to true, the peer will request that all other peers in the ringnet send confirmation of message receipts back to it.
-  - If set to false, the peer will not request message receipt confirmations and any confirmation messages received will be ignored.
 #### **ringPublicKey** (string)
   - **_Required_**, defaults to `ring.pub`
   - This is the path/location of the ring public key file. This is necessary in order to establish trust amongst the decentralized peers
 #### **signature** (string)
   - **_Required_**, defaults to `peer.signature`
   - This is the path/location of the peer signature file which is the signature of the peer's public key as signed by a ring private key. This is necessady in order to establish trust amongst the decentralized peers.
-#### **startDiscovery** (boolean)
-  - *Optional*, defaults to `true`
-  - If set to true, the peer will automatically start the discovery process after creation and initialization
-  - If set to false, the peer will not automatically start the discovery process
 #### **wsServerOptions** (object)
   - *Optional*, defaults to empty object `{}`
   - If given, the peer will use the provided object to create the `ws` (WebSockets) server. See https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback for more options and additional information.
@@ -76,12 +71,12 @@ var peer = new Peer(options);
 /*
   Create a peer, `peer`, using `myRingPulicKey.pub`, `myPeerPublicKey.pub`, 
   `myPeerPublicKey.pem`, and `myPeerSignature` files, that listens on port 
-  `26780` and will attempt to discover the address `127.0.0.1:26781` via 
-  autodiscovery (`startDiscovery`), post-creation. This peer will, if given 
-  an IP to discover with no port, scan ports 26780-26790 (inclusive) against 
-  the IP in order to attempt to establish a secure connection with said IP. 
-  This peer will report that it's public IP address is "127.0.0.1" and it 
-  will also output diagnostics (`debug`).
+  `26780` and will attempt to discover the address `127.0.0.1:26781` when 
+  discovering. This peer will, if given an IP to discover with no port, scan 
+  ports 26780-26790 (inclusive) against the IP in order to attempt to 
+  establish a secure connection with said IP. This peer will report that 
+  it's public IP address is "127.0.0.1" and it will also output diagnostics 
+  (`debug`).
 */
 
 var peer = new Peer({
@@ -97,7 +92,6 @@ var peer = new Peer({
   'discoveryAddresses': [ "127.0.0.1:26781" ],
   'discoveryRange': [ 26780, 27900 ],
   'publicAddress': "127.0.0.1",
-  'startDiscovery': true,
   'debug': true,
 });
 ```
@@ -105,7 +99,7 @@ var peer = new Peer({
 ### Setting up the event handlers
 ```js
 peer.on('ready', () => {
-  /* Underyling HTTP Server is ready */
+  /* Indicates the underyling HTTP Server is ready. */
 });
 
 peer.on('request', ({connection, request }) => {
@@ -146,21 +140,40 @@ peer.on('your_custom_message_header_type', () => {
 });
 ```
 
+### Using `async` / `await`
+Clients can also leverage async / await to detemine peer readiness or the completion of the discovery operation.
+
+```js
+async function createPeer() {
+  const peer = new Peer({ /* ... */ });
+
+  // Wait for peer to initialize...
+  await peer.init();
+
+  // Wait for Peer to finish discover operation...
+  await peer.discover();
+}
+```
+
 ### Creating and Sending Messages
 ```js
-// Create a new Message object with header type of 'blahblahblah' and an object for its body.
-var message = new Message({
-  'type': "MySuperCoolMessage",
-  'body': {
-    'someProperty': someValue
-  }
-});
+/** 
+ * Creates and sends a new 'MySuperCoolMessage' Message with arbitrary body (object).
+ */
+async function sendMySuperCoolMessage() {
+  var message = new Message({
+    type: "MySuperCoolMessage",
+    body: {
+      someProperty: "Some Value!"
+    }
+  });
 
-// Broadcast the message to all connected, verified peers
-try {
-  peer.broadcast({ message });
-} catch(e) {
-  console.error(e.stack);
+  try {
+    // Broadcast the message to all connected, verified peers
+    const broadcastResults = await peer.broadcast({ message });
+  } catch(e) {
+    console.error(e.stack);
+  }
 }
 ```
 
