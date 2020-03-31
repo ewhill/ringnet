@@ -63,7 +63,7 @@ test("PeerTest", async (assert) => {
 		`Attempting to discover on peer to which this peer has already ` + 
 		`connected should throw.`);
 
-	const testPeerSignatureBuffer = new Buffer(testPeerSignature, 'utf8');
+	const testPeerSignatureBuffer = Buffer.from(testPeerSignature, 'utf8');
 	peer.signature_ = testPeerSignatureBuffer;
 	assert.true(peer.isOwnSignature(testPeerSignatureBuffer), 
 		`Properly reports if given signature is equal to peer's own.`);

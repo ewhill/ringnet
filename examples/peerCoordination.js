@@ -27,10 +27,16 @@ console.log(discoveryAddresses);
 
 for(let i=0; i<nPeers; i++) {
   const port = (startingPort + i);
+
+  const addressesExcludingOwn = discoveryAddresses.slice(0);
+  const index = addressesExcludingOwn.indexOf(`127.0.0.1:${(startingPort+i)}`);
+  addressesExcludingOwn.splice(index, 1);
+  const toDiscover = i == 0 ? [] : addressesExcludingOwn;
+
   let options = {
     port,
     publicAddress: `127.0.0.1:${port}`,
-    discoveryAddresses,
+    discoveryAddresses: toDiscover,
     signature: `${keyNames[i]}.peer.signature`,
     publicKey: `${keyNames[i]}.peer.pub`,
     privateKey: `${keyNames[i]}.peer.pem`,
@@ -284,6 +290,25 @@ const loop = (peer) => {
 const main = async () => {
   console.log(`Initializing...`);
 
+  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  for(let i=0; i<peers.length; i++) {
+    console.log(`Initializing peer[${i}]...`);
+    try {
+      await peers[i].init();
+    } catch(e) {
+      console.error(e.stack);
+    }
+    console.log(`peer[${i}] initialized.`);
+  }
+
+  for(let i=1; i<peers.length; i++) {
+    console.log(`peer[${i}] starting discovery...`);
+    await peers[i].discover();
+    console.log(`peer[${i}] finished discovery.`);
+  }
+
   // On a 10s interval, add a random letter from 'alphabet' into 'sharedQueue'
   setInterval(function() {
     const job = {
@@ -308,30 +333,6 @@ const main = async () => {
 
     randomPeer.broadcast(jobMessage);
   }, 10000);
-
-  // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  await peers[0].init();
-
-  let emptyArray = Array.from(new Array(peers.length));
-  let peerInitPromises = emptyArray.map((e,i) => {
-    console.log(`Initializing peer[${i}]...`);
-    return peers[i].init().then(() => {
-      console.log(`peer[${i}] initialized.`);
-    });
-  });
-
-  await Promise.all(peerInitPromises);
-
-  let peerDiscoverPromises = emptyArray.map((e,i) => {
-    console.log(`peer[${i}] starting discovery...`);
-    return peers[i].discover().then(() => {
-      console.log(`peer[${i}] finished discovery.`);
-    });
-  });
-
-  await Promise.all(peerDiscoverPromises);
 
   console.log(`Peers linked, starting loops...`);
 
