@@ -18,7 +18,6 @@ let peers = [];
 let keyNames = ["first", "second", "third" ];
 const startingPort = 26780;
 
-
 const discoveryAddresses = 
   (Array.from(new Array(nPeers)))
     .map((e, i) => `127.0.0.1:${(startingPort+i)}`);
@@ -79,16 +78,18 @@ const broadcastTake = (peer, jobs) => {
     takeJobIds.push(jobId);
 
     jobsObject[jobId] = {
-      // Want everyone to respond, can be updated to > 50% as you see fit
-      'needed': peer.peers.length,
-      'responses': 0,
-      'confirmed': 0,
-      'dropped': 0,
       'enqueued': timestamp,
       'job': jobData
     };
 
-    peer.jobs[jobId] = jobsObject[jobId];
+    peer.jobs[jobId] = {
+      // Want everyone to respond, can be updated to > 50% as you see fit
+      needed: peer.peers.length,
+      responses: 0,
+      confirmed: 0,
+      dropped: 0,
+      ...jobsObject[jobId]
+    };
   }
   
   let takeMessage = new Message({
@@ -201,7 +202,7 @@ const takeResultHandler = (peer, { message, connection }) => {
   }
   
   for(let id of jobIdsResponded) {
-    if(peer.jobs[id].responses >= peer.jobs[id].needed) { 
+    if(peer.jobs[id].responses >= peer.jobs[id].needed) {
       if(peer.jobs[id].confirmed >= peer.jobs[id].needed) {
           console.log(`${peer.port} has received all necessary responses; ` + 
             `starting work on: ${id}`);
@@ -230,7 +231,7 @@ const processJob = (peer, jobId) => {
 
   setTimeout(() => {
     completeJob(peer, jobId);
-  }, 20000);
+  }, parseInt(Math.random()*20000));
 };
 
 const completeJob = (peer, jobId) => {
@@ -257,7 +258,19 @@ const loop = (peer) => {
   return new Promise((success, failure) => {
     // Simulate getting available jobs. This could be replaced with a DB 
     // lookup, bus dequeue, etc., as your application sees fit.
-    return success(peer.jobsQueue);
+    let availableJobs = { ...peer.jobsQueue };
+
+    // Remove jobs that this peer is already working on (if any)...
+    if(peer.jobs) {
+      for(let jobId of Object.keys(peer.jobs)) {
+        if(availableJobs.hasOwnProperty(jobId)) {
+          delete availableJobs[jobId];
+        }
+      }
+    }
+
+    // Return remaining, available jobs
+    return success(availableJobs);
   })
   .then(results => {
     const jobIds = Object.keys(results);
@@ -273,11 +286,12 @@ const loop = (peer) => {
     }
   })
   .catch(e => {
-    console.error(`Loop error: ${JSON.stringify(e)}`);
+    console.error(`Loop error: `);
+    console.error(e.stack);
   }).then(() => {
     return new Promise((success, failure) => {
       // Psuedo-random delay anywhere from 10s to 20s
-      let timeout = 500 + (parseInt(Math.floor(Math.random()*500)));
+      let timeout = 50 + (parseInt(Math.floor(Math.random()*50)));
       console.log(`${peer.port} waiting for ${timeout}ms`);
       
       setTimeout(() => {
@@ -309,7 +323,7 @@ const main = async () => {
     console.log(`peer[${i}] finished discovery.`);
   }
 
-  // On a 10s interval, add a random letter from 'alphabet' into 'sharedQueue'
+  // On a 5s interval, create a 'psuedo' job and simulate a peer receiving it.
   setInterval(function() {
     const job = {
       data: {
@@ -318,6 +332,7 @@ const main = async () => {
       salt: crypto.randomBytes(8).toString('hex')
     }
 
+    // Simulate a job receiving a job.
     const randomPeer = peers[parseInt(Math.floor(Math.random()*peers.length))];
     const jobMessage = new Message({
         type: 'job',
@@ -332,7 +347,7 @@ const main = async () => {
     }
 
     randomPeer.broadcast(jobMessage);
-  }, 10000);
+  }, 5000);
 
   console.log(`Peers linked, starting loops...`);
 
