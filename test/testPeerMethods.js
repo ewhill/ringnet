@@ -53,7 +53,7 @@ test("PeerMethods", async (assert) => {
 
 const testDiscoverAddress = async (assert) => {
 	let attemptedConnections = [];
-	peer.attemptConnection = (originalAddress, parsedAddress) => {
+	peer.attemptConnection = ({ originalAddress, parsedAddress }) => {
 		attemptedConnections.push(originalAddress);
 		return Promise.resolve();
 	};

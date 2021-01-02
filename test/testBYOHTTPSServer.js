@@ -4,8 +4,7 @@ var https = require('https');
 const test = require('tape');
 
 const { Peer, Message } = require('../index.js');
-
-const { HTTPS_SERVER_MODES } = require('../lib/Server');
+const Server = require('../lib/Server');
 
 const sink = () => {};
 const fakeLogger = { error: sink, info: sink, log: sink, warn: sink };
@@ -32,7 +31,7 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
   const p1 = new Peer({
     httpsServerConfig: {
       server,
-      mode: HTTPS_SERVER_MODES.PASS,
+      mode: Server.MODES.PASS,
     },
     signaturePath: "first.peer.signature",
     publicKeyPath: "first.peer.pub",
