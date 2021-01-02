@@ -3,24 +3,45 @@ const fs = require('fs');
 const url = require('url');
 const https = require('https');
 
-const { Peer } = require('../index.js');
+const { Peer, Message } = require('../index.js');
+const { HTTPS_SERVER_MODES } = require('../lib/Server.js');
 
 // ----------------------------------------------
 // ----------------------------------------------
+
+class CliMessage extends Message {
+    constructor(options = {}) {
+        super();
+        const { data } = options;
+        this.data = data;
+    }
+
+    get data() { return this.data_}
+    set data(value) { this.data_ = value; }
+}
 
 let keyNames = ["../first", "../second", "../third" ];
 let nPeers = 3;
 let peers = {};
 
+const httpServer = https.createServer({
+    'key': fs.readFileSync("../https.key.pem"),
+    'cert': fs.readFileSync("../https.cert.pem")
+});
+
 for(let i=0; i<nPeers; i++) {
     let options = {
         'publicAddress': "127.0.0.1",
-        'signature': keyNames[i]+".peer.signature",
-        'publicKey': keyNames[i]+".peer.pub",
-        'privateKey': keyNames[i]+".peer.pem",
-        'ringPublicKey': "../.ring.pub",
-        'debug': false,
-        'wsServerOptions': {
+        'signaturePath': keyNames[i]+".peer.signature",
+        'publicKeyPath': keyNames[i]+".peer.pub",
+        'privateKeyPath': keyNames[i]+".peer.pem",
+        'ringPublicKeyPath': "../.ring.pub",
+        'debug': true,
+        'httpsServerConfig': {
+            'mode': HTTPS_SERVER_MODES.PASS,
+            'server': httpServer,
+        },
+        'wsServerConfig': {
             noServer: true
         }
     };
@@ -29,9 +50,11 @@ for(let i=0; i<nPeers; i++) {
     let address = crypto.randomBytes(4).toString('hex');
 
     ((peer, address) => {
-        peer.on('cliMessage', ({message, connection}) => {
-            console.log(`${address} says: ${message.body.data}`);
-        });
+        peer
+            .bind(CliMessage)
+            .to((peer, message, connection, logger=console) => {
+                console.log(`${address} says: ${message.data}`);
+            });
     })(peer, address);
 
     peers[address] = peer;
@@ -92,10 +115,7 @@ class RingnetGateway {
 
 let rng = new RingnetGateway({
     debug: true,
-    httpServer: https.createServer({
-        'key': fs.readFileSync("../https.key.pem"),
-        'cert': fs.readFileSync("../https.cert.pem")
-    }),
+    httpServer,
     map: peers,
     port: 26780
 });

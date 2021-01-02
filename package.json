@@ -5,8 +5,8 @@
   "description": "A secure peer-to-peer networking NodeJS module based on WebSockets using RSA and AES.",
   "main": "index.js",
   "scripts": {
-    "coverage": "istanbul cover tape 'test/test*.js' 'test/events/test*.js'",
-    "test": "tape 'test/test*.js' 'test/events/test*.js'",
+    "coverage": "istanbul cover tape 'test/test*.js'",
+    "test": "tape 'test/test*.js' | faucet",
     "setup": "openssl genrsa -out https.key.pem 2048 && openssl req -new -key https.key.pem -out https.csr.pem && openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem && node examples/peerSetup.js -o=first -b=2048 && node examples/peerSetup.js -o=second -b=2048 -ring=.ring.pem && node examples/peerSetup.js -o=third -b=2048 -ring=.ring.pem",
     "peer1": "node examples/peerCommandLine.js -publicAddress=127.0.0.1 -port=26781 -ring=.ring.pub -signature=first.peer.signature -private=first.peer.pem -public=first.peer.pub",
     "peer2": "node examples/peerCommandLine.js -publicAddress=127.0.0.1 -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -signature=second.peer.signature -private=second.peer.pem -public=second.peer.pub",
@@ -33,11 +33,12 @@
   },
   "license": "MIT",
   "dependencies": {
-    "handlebars": "^4.5.3",
     "ws": "^6.2.1"
   },
   "devDependencies": {
+    "faucet": "0.0.1",
+    "handlebars": "^4.5.3",
     "istanbul": "^1.0.0-alpha.2",
-    "tape": "^4.13.2"
+    "tape": "^4.13.3"
   }
 }

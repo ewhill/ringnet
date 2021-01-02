@@ -49,7 +49,7 @@ USAGE:
 **************************************************************************************************/
 
 const fs = require('fs');
-const RSAKeyPair = require('../lib/src/RSAKeyPair.js');
+const RSAKeyPair = require('../lib/RSAKeyPair.js');
 const Expectation = require('./expectation');
 
 // Grab the necessary arguments from `process.argv` using `Expectation`
@@ -107,7 +107,7 @@ if(args.ring && Array.isArray(args.ring)) {
   }
 } else {
   createdRing = true;
-  ringRSAKeyPair = (new RSAKeyPair()).generate({ modulusLength: keySize });
+  ringRSAKeyPair = RSAKeyPair.generate({ modulusLength: keySize });
 }
 
 debug(`Parsing / Generating peer keys...`);
@@ -129,7 +129,7 @@ if(args.peer && Array.isArray(args.peer)) {
 } else {
   // Not given any `-peer` command line option, create peer key pair
   createdPeer = true;
-  peerRSAKeyPair = (new RSAKeyPair()).generate({ modulusLength: keySize });
+  peerRSAKeyPair = RSAKeyPair.generate({ modulusLength: keySize });
 }
 
 // Export the ring keys

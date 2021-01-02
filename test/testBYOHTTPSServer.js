@@ -5,7 +5,10 @@ const test = require('tape');
 
 const { Peer, Message } = require('../index.js');
 
-const HTTP_SERVER_MODES = require('../lib/src/httpsServerModes');
+const { HTTPS_SERVER_MODES } = require('../lib/Server');
+
+const sink = () => {};
+const fakeLogger = { error: sink, info: sink, log: sink, warn: sink };
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -27,17 +30,20 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
   });
 
   const p1 = new Peer({
-    httpsServer: server,
-    httpsServerMode: HTTP_SERVER_MODES.PASS,
-    signature: "first.peer.signature",
-    publicKey: "first.peer.pub",
-    privateKey: "first.peer.pem",
-    ringPublicKey: ".ring.pub",
+    httpsServerConfig: {
+      server,
+      mode: HTTPS_SERVER_MODES.PASS,
+    },
+    signaturePath: "first.peer.signature",
+    publicKeyPath: "first.peer.pub",
+    privateKeyPath: "first.peer.pem",
+    ringPublicKeyPath: ".ring.pub",
+    logger: fakeLogger,
   });
 
   await p1.init();
   
-  assert.equal(p1.httpsServer.address().port, 8181, 
+  assert.equal(p1.port, 8181, 
     "Created HTTPS server and HTTPS server of peer should " + 
     "be listening on the same port as they should be the " + 
     "same server.");
@@ -76,16 +82,25 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
     "end string as given when created.");
     
   const p2 = new Peer({
-    port: 9191,
-    signature: "second.peer.signature",
-    publicKey: "second.peer.pub",
-    privateKey: "second.peer.pem",
-    ringPublicKey: ".ring.pub",
-    discoveryAddresses: [ "127.0.0.1" ],
-    discoveryRange: [8180, 8190],
+    httpsServerConfig: {
+      port: 9191,
+    },
+    signaturePath: "second.peer.signature",
+    publicKeyPath: "second.peer.pub",
+    privateKeyPath: "second.peer.pem",
+    ringPublicKeyPath: ".ring.pub",
+    discoveryConfig: {
+      addresses: [ "127.0.0.1" ],
+      range: {
+        start: 8180,
+        end: 8190
+      }
+    },
+    logger: fakeLogger,
   });
 
   await p2.init();
+  await p2.discover();
   
   assert.equal(p2.peers.length, 1, 
     "Peers should be able to connect to peer with " + 

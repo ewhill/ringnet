@@ -10,15 +10,19 @@ const { Peer, Message } = require('../index.js');
 // ----------------------------------------------------------------------------------
 
 test("PeerExportImportTest", async (assert) => {
+  const sink = () => {};
+  const fakeLogger = { error: sink, info: sink, log: sink, warn: sink };
+  
   let p1 = new Peer({
-    port: 26788,
-    discoveryAddresses: [ "127.0.0.1:26780" ],
-    signature: "first.peer.signature",
-    publicKey: "first.peer.pub",
-    privateKey: "first.peer.pem",
-    ringPublicKey: ".ring.pub",
-    range: [26780, 26790],
-  });
+      signaturePath: "first.peer.signature",
+      publicKeyPath: "first.peer.pub",
+      privateKeyPath: "first.peer.pem",
+      ringPublicKeyPath: ".ring.pub",
+      httpsServerConfig: {
+        port: 26780,
+      },
+      logger: fakeLogger
+    });
 
   await p1.init();
 

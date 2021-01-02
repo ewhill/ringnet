@@ -1,7 +1,7 @@
 "use strict";
 const test = require('tape');
 
-const ManagedTimeouts = require('../lib/src/managedTimeouts.js');
+const ManagedTimeouts = require('../lib/managedTimeouts.js');
 
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
