@@ -3,7 +3,6 @@
 const test = require('tape');
 
 const Message = require('../lib/Message');
-const MessageTypes = require('../lib/MessageTypes');
 
 test("Message", (assert) => {
   // Create a new empty Message
@@ -16,7 +15,6 @@ test("Message", (assert) => {
   // Create a message with header type and JSON body data
   let messageBody = { 'test': "testing" };
   let messageWithTypeAndBody = new Message({
-      type: MessageTypes._helo,
       body: messageBody
     });
   
@@ -24,11 +22,6 @@ test("Message", (assert) => {
   assert.deepEqual(messageWithTypeAndBody.body, messageBody, 
     "Constructed with options body argument should have body equal " + 
     "to passed body object.");
-    
-  // Ensure the message has the constructed header of type = '_helo'
-  assert.equal(messageWithTypeAndBody.header.type, MessageTypes._helo, 
-    "Constructed with options Message type should have header type " + 
-    "equal to passed Message type.");
 
   assert.ok(messageWithTypeAndBody.header.hash.length > 0, 
     "Header hash should be set when Message is constructed.");
