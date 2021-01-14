@@ -78,7 +78,7 @@ test("PeerTest", async (assert) => {
 async function testSendReceivePeer1(assert) {
   return new Promise((resolve, reject) => {
     const testHandler = (message, connection, logger=console) => {
-      assert.equal(message.body.data, "Howdy, it's peer1!!!", 
+      assert.equal(message.data, "Howdy, it's peer1!!!", 
         "Message body sent by peer1 and received by peer2 should be equal");
 
       peer2.unbind(TestMessage);
@@ -93,7 +93,7 @@ async function testSendReceivePeer1(assert) {
 async function testSendReceivePeer2(assert) {
   return new Promise((resolve, reject) => {
     const testHandler = (message, connection, logger=console) => {
-      assert.equal(message.body.data, "Hello, from peer2!!!", 
+      assert.equal(message.data, "Hello, from peer2!!!", 
         "Message body sent by peer2 and received by peer1 should be equal.");
 
       peer1.unbind(TestMessage);

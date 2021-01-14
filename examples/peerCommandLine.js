@@ -1,124 +1,219 @@
 "use strict";
 
-const fs = require('fs');
-const dns = require('dns');
 const readline = require('readline');
 
 const Expectation = require('./expectation');
 const { Peer, Message } = require('../index.js');
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+class TextMessage extends Message {
+  constructor(options = {}) {
+    super();
+    const { text='' } = options;
+    this.body = { text };
+  }
+
+  clone() {
+    return new TextMessage({ text: this.text });
+  }
+
+  get text() { return this.body.text; }
+  set text(value) { this.body = { ...this.body, text: value }; }
+}
+
+class AliasMessage extends Message {
+  constructor(options = {}) {
+    super();
+    const { alias='' } = options;
+    this.body = { alias };
+  }
+
+  clone() {
+    return new AliasMessage({ alias: this.alias });
+  }
+
+  get alias() { return this.body.alias; }
+  set alias(value) { this.body = { ...this.body, alias: value }; }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 const args = (new Expectation({
-    'publicAddress': "", //optional (defaults to false)
-    'port': "", // optional (defaults to 26781)
+    'port': "", // optional (defaults to 26780)
     'peers': [","], // optional (defaults to [])
     'ring': "", // required (defaults to ring.pub)
     'private': "", // optional (defaults to peer.pem)
     'public': "", // optional (defaults to peer.pub)
     'signature': "", // required (peer won't start without)
-    'd': "", // optional
     'range': [","], // optional (defaults to [26780,26790])
-    'requireConfirmation': "",
-    'rc': ""
   })).args;
 
-console.log(args);
+const isDebugEnabled = args.debug || args.v || args.verbose;
+const sink = () => {};
+const sinkLogger = { error: sink, info: sink, log: sink, warn: sink };
+const logger = (isDebugEnabled ? console : sinkLogger)
+const discoveryConfig = args.range ? {
+    range: {
+      start: args.range[0],
+      end: args.range[1]
+    }
+  } : {};
 
-var DSCVRY_SAVEFILE = args.save || `${Date.now()}.json`;
-
-var readInterface = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
+const readInterface = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 readInterface.setPrompt('NET> ');
 
-var p = new Peer({
-  'port': args.port,
-  'publicAddress': args.publicAddress,
-  'discoveryAddresses': args.peers,
-  'debug': args.debug || args.v || args.verbose,
-  'publicKey': args.public,
-  'privateKey': args.private,
-  'ringPublicKey': args.ring,
-  'signature': args.signature,
-  'range': args.range,
-  'conrirmMessages': args.requireConfirmation || args.rc
-});
+const peer = new Peer({
+    signaturePath: args.signature,
+    publicKeyPath: args.public,
+    privateKeyPath: args.private,
+    ringPublicKeyPath: args.ring,
+    httpsServerConfig: {
+      port: args.port,
+    },
+    discoveryConfig,
+    logger
+  });
 
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 (async () => {
+  let addressBook = {};
+  let alias;
+
   try {
-    await p.init();
-    await p.discover();
+    await peer.init();
+
+    console.clear();
+    console.log(args);
+    console.log();
+
+    peer.bind(TextMessage).to((message, connection) => {
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        const alias = 
+          addressBook.hasOwnProperty(connection.signature) ? 
+            addressBook[connection.signature] : 
+            connection.address;
+        console.log(`[${alias}]: ${message.text}`);
+        readInterface.prompt();
+      });
+
+    peer.bind(AliasMessage).to((message, connection) => {
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        const previous = 
+          addressBook.hasOwnProperty(connection.signature) ? 
+            addressBook[connection.signature] : 
+            connection.address;
+        console.log(
+          `[NET] ${connection.address} (previously ${previous}, will now be ` +
+          `known as ${message.alias}`);
+        addressBook[connection.signature] = message.alias;
+        readInterface.prompt();
+      });
+
+    peer.on('connection', (connection) => {
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        if(addressBook.hasOwnProperty(connection.signature)) {
+          console.log(
+            `[NET] ${addressBook[connection.signature]} has rejoined the ` +
+            `chat.`);
+        } else {
+          addressBook[connection.signature] = connection.address;
+          console.log(`[NET] ${connection.address} has joined the chat.`);
+        }
+        readInterface.prompt();
+      });
+
+    if(args.peers && args.peers.length > 0) {
+      await peer.discover(args.peers);
+    }
   } catch(e) {
     console.error(e.stack);
     process.exit(1);
   }
 
-  p.on('msg', ({ message, connection }) => {
-    // TODO: Do something with the message (Update DB, Blockchain, etc...)
-    // console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
-    console.log(`[${connection.originalAddress}:${connection.originalPort}]: ` + 
-      `${message.body.text}`);
-    readInterface.prompt();
-  });
+  if(!args.d || args.d.length < 1) {    
+    let isQueueEnabled = false;
+    let queue = [];
 
-  if(!args.d || args.d.length < 1) {
-    var queue = [];
-    var canSend = true;
+    readInterface.on('line', async (line) => {
+      if(line && line.trim().toString().length > 0) {
+        line = line.trim().toString().toLowerCase();
 
-    readInterface.on('line', (line) => {
-      if(line && line.toString().length > 0) {
-        line = line.toString();
-        
-        if(line == 'exit') { // User typed 'exit'
-          p.close();
-          readInterface.close(); //close return
-          process.exit(0);
-        } else if(line == '/peers') {
-          console.log(p.getPeerList());
-        } else if(line == '/queue') {
-          console.log(queue);
-        } else if(line == '/queue on') {
-          canSend = false;
-          console.log(`Queue is now on.`);
-        } else if(line == '/queue off') {
-          canSend = true;
-          console.log(`Queue is now off.`);
-        } else if(line == '/queue send' || line == '/send') {
-          // Send all the queued messages
-          while(queue.length > 0) {
-            const message = queue.splice(0,1)[0];
-            try {
-              p.broadcast({ message });
-            } catch(e) {
-              console.error(e.message);
-              console.error(e.stack);
-            }
-          }
-        } else if(line == '/self') {
-          console.log(JSON.parse(p.toString()));
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+
+        if(line.indexOf('/alias') === 0) {
+          alias = line.split(' ').slice(1).join(' ');
+          await peer.broadcast(new AliasMessage({ alias }));
+          console.log(`[NET] You are now known as "${alias}".`);
         } else {
-          var message = new Message({
-            type: 'msg',
-            body: {
-              'text': line
-            }
-          });
-          
-          if(isReady && canSend) {
-            try {
-              p.broadcast({ message });
-            } catch(e) {
-              console.error(e.message);
-              console.error(e.stack);
-            }
-          } else {
-            queue.push(message);
+          switch(line) {
+            case 'exit':
+              await peer.close();
+              readInterface.close();
+              process.exit(0);
+              break;
+            case '/peers':
+              console.log('[NET]', peer.peers);
+              break;
+            case '/queue':
+            case '/queue show':
+              console.log('[NET]', queue);
+              break;
+            case '/queue on':
+              isQueueEnabled = true;
+              console.log(`[NET] Queue is now on.`);
+              break;
+            case '/queue off':
+              isQueueEnabled = false;
+              console.log(`[NET] Queue is now off.`);
+              break;
+            case '/queue send':
+            case '/send':
+              // Send all the queued messages
+              while(queue.length > 0) {
+                try {
+                  const message = queue.splice(0,1)[0];
+                  await peer.broadcast(message);
+                  console.log(`[${alias ? alias : "You"}]: ${message.text}`);
+                } catch(e) {
+                  console.error(`[NET] ${e.message}`);
+                }
+              }
+              break;
+            case '/self':
+              console.log(JSON.parse(peer.toString()));
+              break;
+            default:
+              const message = new TextMessage({ text: line });
+              
+              if(isQueueEnabled) {
+                queue.push(message);
+              } else {
+                try {
+                  await peer.broadcast(message);
+                  console.log(`[${alias ? alias : "You"}]: ${message.text}`);
+                } catch(e) {
+                  console.error(`[NET] ${e.message}`);
+                }
+              }
           }
         }
       }
@@ -130,7 +225,7 @@ var p = new Peer({
   readInterface.prompt();
 })();
 
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------

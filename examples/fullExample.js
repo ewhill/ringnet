@@ -73,9 +73,9 @@ const main = async () => {
 
   const mySuperCoolMessageHandler = (message, connection) => {
     // The 'message' argument is here is given as an upgraded 
-    // MySuperCoolMessage class so we can use the getter for data 
-    // as we would if we had constructed the message using 
-    // `new MySuperCoolMessage()` manually.
+    // MySuperCoolMessage class so we can use the getter for data as we would 
+    // if we had constructed the message using new MySuperCoolMessage()` 
+    // manually.
     console.log(message.data);
 
     if(++received === 2) {
