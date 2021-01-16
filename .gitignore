@@ -1,12 +1,11 @@
-coverage/*
-.imdone
+.nyc_output/*
 .imdone/*
-package-lock.json
+coverage/*
 node_modules/*
-node_modules
 *.pem
 *.pub
 *.signature
 *.log
 *.txt
+package-lock.json
 .DS_STORE

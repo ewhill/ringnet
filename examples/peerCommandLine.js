@@ -2,6 +2,7 @@
 
 const readline = require('readline');
 
+const colors = require('./colors');
 const Expectation = require('./expectation');
 const { Peer, Message } = require('../index.js');
 
@@ -66,6 +67,37 @@ const discoveryConfig = args.range ? {
     }
   } : {};
 
+const netLog = function() {
+  const colorArgs = [
+      colors.Dim,
+      colors.Foreground.White
+    ].concat(Array.from(arguments)).concat([colors.Reset]);
+  console.log.apply(console, colorArgs);
+};
+
+const netError = function() {
+  const colorArgs = [
+      colors.Dim,
+      colors.Background.White,
+      colors.Foreground.Red
+    ].concat(Array.from(arguments)).concat([colors.Reset]);
+  console.log.apply(console, colorArgs);
+};
+
+const peerMessage = function() {
+  const colorArgs = [
+      colors.Foreground.White
+    ].concat(Array.from(arguments)).concat([colors.Reset]);
+  console.log.apply(console, colorArgs);
+};
+
+const ownMessage = function() {
+  const colorArgs = [
+      colors.Foreground.Blue
+    ].concat(Array.from(arguments)).concat([colors.Reset]);
+  console.log.apply(console, colorArgs);
+};
+
 const readInterface = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -107,7 +139,7 @@ const peer = new Peer({
           addressBook.hasOwnProperty(connection.signature) ? 
             addressBook[connection.signature] : 
             connection.address;
-        console.log(`[${alias}]: ${message.text}`);
+        peerMessage(`[${alias}]: ${message.text}`);
         readInterface.prompt();
       });
 
@@ -118,7 +150,7 @@ const peer = new Peer({
           addressBook.hasOwnProperty(connection.signature) ? 
             addressBook[connection.signature] : 
             connection.address;
-        console.log(
+        netLog(
           `[NET] ${connection.address} (previously ${previous}, will now be ` +
           `known as ${message.alias}`);
         addressBook[connection.signature] = message.alias;
@@ -129,12 +161,12 @@ const peer = new Peer({
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
         if(addressBook.hasOwnProperty(connection.signature)) {
-          console.log(
+          netLog(
             `[NET] ${addressBook[connection.signature]} has rejoined the ` +
             `chat.`);
         } else {
           addressBook[connection.signature] = connection.address;
-          console.log(`[NET] ${connection.address} has joined the chat.`);
+          netLog(`[NET] ${connection.address} has joined the chat.`);
         }
         readInterface.prompt();
       });
@@ -143,7 +175,7 @@ const peer = new Peer({
       await peer.discover(args.peers);
     }
   } catch(e) {
-    console.error(e.stack);
+    netError(e.stack);
     process.exit(1);
   }
 
@@ -153,37 +185,41 @@ const peer = new Peer({
 
     readInterface.on('line', async (line) => {
       if(line && line.trim().toString().length > 0) {
-        line = line.trim().toString().toLowerCase();
+        line = line.toString().trim();
 
         process.stdout.moveCursor(0, -1);
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
 
-        if(line.indexOf('/alias') === 0) {
+        if(line.toLowerCase().indexOf('/alias') === 0) {
           alias = line.split(' ').slice(1).join(' ');
           await peer.broadcast(new AliasMessage({ alias }));
-          console.log(`[NET] You are now known as "${alias}".`);
+          netLog(`[NET] You are now known as "${alias}".`);
+        } else if(line.toLowerCase().indexOf('/discover') === 0) {
+          let addresses = line.split(' ').slice(1).join(' ').split(',');
+          netLog(`[NET] Now discovering on [${addresses.join('", "')}].`);
+          await peer.discover(addresses);
         } else {
-          switch(line) {
+          switch(line.toLowerCase()) {
             case 'exit':
               await peer.close();
               readInterface.close();
               process.exit(0);
               break;
             case '/peers':
-              console.log('[NET]', peer.peers);
+              netLog('[NET]', peer.peers);
               break;
             case '/queue':
             case '/queue show':
-              console.log('[NET]', queue);
+              netLog('[NET]', queue);
               break;
             case '/queue on':
               isQueueEnabled = true;
-              console.log(`[NET] Queue is now on.`);
+              netLog(`[NET] Queue is now on.`);
               break;
             case '/queue off':
               isQueueEnabled = false;
-              console.log(`[NET] Queue is now off.`);
+              netLog(`[NET] Queue is now off.`);
               break;
             case '/queue send':
             case '/send':
@@ -192,14 +228,14 @@ const peer = new Peer({
                 try {
                   const message = queue.splice(0,1)[0];
                   await peer.broadcast(message);
-                  console.log(`[${alias ? alias : "You"}]: ${message.text}`);
+                  ownMessage(`[${alias ? alias : "You"}]: ${message.text}`);
                 } catch(e) {
-                  console.error(`[NET] ${e.message}`);
+                  netError(`[NET] ${e.message}`);
                 }
               }
               break;
             case '/self':
-              console.log(JSON.parse(peer.toString()));
+              netLog(JSON.parse(peer.toString()));
               break;
             default:
               const message = new TextMessage({ text: line });
@@ -209,9 +245,9 @@ const peer = new Peer({
               } else {
                 try {
                   await peer.broadcast(message);
-                  console.log(`[${alias ? alias : "You"}]: ${message.text}`);
+                  ownMessage(`[${alias ? alias : "You"}]: ${message.text}`);
                 } catch(e) {
-                  console.error(`[NET] ${e.message}`);
+                  netError(`[NET] ${e.message}`);
                 }
               }
           }
