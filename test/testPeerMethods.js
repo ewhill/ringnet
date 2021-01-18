@@ -92,10 +92,11 @@ const testSignature = async (assert) => {
 	const testPeerSignature = 'aaa';
 	const testPeerConnection = {
 		signature: testPeerSignature.toString('hex'),
-		peerPublicKeySignature: testPeerSignature
+		remoteSignature: testPeerSignature.toString('hex'),
+		isConnected: true,
 	};
 	const testPeer = { connection: testPeerConnection };
-	peer.peers_ = [{ ...testPeer }];
+	peer.peers_ = [testPeer];
 
 	assert.true(peer.isConnectedTo(testPeerConnection), 
 		`Properly reports if peer is connected to another peer.`);
