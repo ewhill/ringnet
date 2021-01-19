@@ -77,7 +77,6 @@ const netLog = function() {
 
 const netError = function() {
   const colorArgs = [
-      colors.Dim,
       colors.Background.White,
       colors.Foreground.Red
     ].concat(Array.from(arguments)).concat([colors.Reset]);
@@ -197,8 +196,15 @@ const peer = new Peer({
           netLog(`[NET] You are now known as "${alias}".`);
         } else if(line.toLowerCase().indexOf('/discover') === 0) {
           let addresses = line.split(' ').slice(1).join(' ').split(',');
-          netLog(`[NET] Now discovering on [${addresses.join('", "')}].`);
-          await peer.discover(addresses);
+          netLog(`[NET] Now discovering on ["${addresses.join('", "')}"].`);
+          try {
+            const results = await peer.discover(addresses);
+            netLog(`[NET] Discovery completed on ` + 
+              `["${addresses.join('", "')}"]: ${results}`);
+          } catch(e) {
+            netError(`[NET] Failed to discover on ` + 
+              `["${addresses.join('", "')}"].`);
+          }
         } else {
           switch(line.toLowerCase()) {
             case 'exit':
