@@ -77,15 +77,23 @@ class JobResultMessage extends Message {
 
 class Worker extends Peer {
   _work = {};
-  _workQueue = [];
+  _workQueue = {};
 
   constructor(options) {
     super(options);
 
-    this.bind(JobMessage).to(this.jobMessageHandler);
-    this.bind(TakeRequestMessage).to(this.takeRequestMessageHandler);
-    this.bind(TakeResponseMessage).to(this.takeResponseMessageHandler);
-    this.bind(JobResultMessage).to(this.jobResultMessageHandler);
+    this.bind(JobMessage).to((message, connection) => {
+        this.jobMessageHandler(message, connection);
+      });
+    this.bind(TakeRequestMessage).to((message, connection) => {
+        this.takeRequestMessageHandler(message, connection);
+      });
+    this.bind(TakeResponseMessage).to((message, connection) => {
+        this.takeResponseMessageHandler(message, connection);
+      });
+    this.bind(JobResultMessage).to((message, connection) => {
+        this.jobResultMessageHandler(message, connection);
+      });
   }
 
   get work() {
@@ -93,11 +101,11 @@ class Worker extends Peer {
   }
 
   get workQueue() {
-    return this._workQueue.slice(0);
+    return this._workQueue;
   }
 
   hasJob(id) {
-    return this._work.hasOwnProperty[id];
+    return this._work.hasOwnProperty(id);
   }
 
   getJob(id) {
@@ -107,15 +115,15 @@ class Worker extends Peer {
     return this._work[id];
   }
 
-  addJob(job) {
-    const jobId = getJobId(job);
+  addJob(job, timestamp) {
+    const jobId = this.getJobId(job);
     this._work[jobId] = {
       // Want everyone to respond, can be updated to > 50% as you see fit
       needed: this.peers.length,
       responses: 0,
       confirmed: 0,
       dropped: 0,
-      enqueued: timestamp,
+      enqueued: timestamp ? timestamp : (new Date()).getTime(),
       job
     };
     return jobId;
@@ -149,10 +157,11 @@ class Worker extends Peer {
       
     let jobsObject = {};
     let takeJobIds = [];
-    let timestamp = (new Date()).getTime();
     
+    const timestamp = (new Date()).getTime();
+
     for(let i=0; i<jobs.length; i++) {
-      const jobId = this.addJob(jobs[i]);
+      const jobId = this.addJob(jobs[i], timestamp);
 
       jobsObject[jobId] = {
         enqueued: timestamp,
@@ -281,6 +290,8 @@ class Worker extends Peer {
   jobMessageHandler (message, connection) {
     const { job } = message; 
     const jobId = this.getJobId(job);
+
+    console.log(`${this.port} received a new job: ${jobId}`);
 
     if(!this._workQueue.hasOwnProperty(jobId)) {
       this._workQueue[jobId] = job;
