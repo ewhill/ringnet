@@ -183,6 +183,7 @@ class Worker extends Peer {
   };
 
   async takeRequestMessageHandler (message, connection) {
+    console.log(`${this.port} received take request: ${message}.`);
     let got = [];
     let drop = [];
       
@@ -206,17 +207,20 @@ class Worker extends Peer {
               (message.timestamp - this._work[remoteJobId].enqueued);
             
             if(difference > 0) {
-              // Job ${message.jobs[id]} DOES conflict, will be DROPPED!
+              console.log(
+                `Job ${remoteJobId} DOES conflict, will be DROPPED!`);
               drop.push(remoteJobId);
             } else if(difference === 0) {
-              // Both jobs were enqueued at EXACTLY the same time. Cannot 
-              // proceed, and both peers must drop the job.
+              console.log(
+                `Both jobs were enqueued at EXACTLY the same time. Cannot ` + 
+                `proceed, and both peers must drop the job.`);
               drop.push(remoteJobId);
               this.removeJob(remoteJobId);
             } else {
-              // Job ${message.jobs[id]} conflicts but was enqueued by 
-              // peer before it was locally enqueued. The job will be 
-              // confirmed to peer and dropped locally.
+              console.log(
+                `Job ${remoteJobId} conflicts but was enqueued by peer ` + 
+                `before it was locally enqueued. The job will be confirmed ` + 
+                `to peer and dropped locally.`);
               got.push(remoteJobId);
               this.removeJob(remoteJobId);
             }
@@ -298,7 +302,7 @@ class Worker extends Peer {
     }
   };
 
-  async processJob (peer, jobId) {
+  async processJob (jobId) {
     console.log(`${this.port} is starting work on job: ${jobId}`);
 
     // Simualte working on a job...
@@ -313,6 +317,7 @@ class Worker extends Peer {
   async completeJob (jobId) {
     console.log(`${this.port} has completed work on job: ${jobId}`);
     this.removeJob(jobId);
+    delete this._work[jobId];
     return this.sendJobResult(jobId);
   };
 
