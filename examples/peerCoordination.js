@@ -397,8 +397,8 @@ const loop = () => {
     let availableJobs = { ...worker.workQueue };
 
     // Remove jobs that this peer is already working on (if any)...
-    if(worker.jobs) {
-      for(let jobId of Object.keys(worker.jobs)) {
+    if(worker.work) {
+      for(let jobId of Object.keys(worker.work)) {
         if(availableJobs.hasOwnProperty(jobId)) {
           delete availableJobs[jobId];
         }
