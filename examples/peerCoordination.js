@@ -376,14 +376,14 @@ class Worker extends Peer {
                 `Both jobs were enqueued at EXACTLY the same time. Cannot ` + 
                 `proceed, and both peers must drop the job.`);
               drop.push(remoteJobId);
-              // this.removeJob(remoteJobId);
+              this.removeJob(remoteJobId);
             } else {
               this._logger.log(
                 `Job ${remoteJobId} conflicts but was enqueued by peer ` + 
                 `before it was locally enqueued. The job will be confirmed ` + 
                 `to peer and dropped locally.`);
               got.push(remoteJobId);
-              // this.removeJob(remoteJobId);
+              this.removeJob(remoteJobId);
             }
           } else {
             this._logger.log(
