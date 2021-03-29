@@ -206,9 +206,6 @@ class Worker extends Peer {
   addJob(job, timestamp) {
     const jobId = this.getJobId(job);
     const trustedPeers = this.trustedPeers;
-    const eligiblePeers = 
-      trustedPeers.reduce((r, p) => 
-        ({ ...r, [p.connection.signature]: false }), {});
 
     this._work[jobId] = {
       /*
@@ -224,7 +221,8 @@ class Worker extends Peer {
        * in the time between the job being added and the job being confirmed 
        * will not be able to participate in the process.
        */
-      available: eligiblePeers,
+      available: trustedPeers.reduce((r, p) => 
+        ({ ...r, [p.connection.remoteSignature]: false }), {}),
       /*
        * Tallies for the total received, confirmed and dropped takeResult 
        * messages.
@@ -365,7 +363,7 @@ class Worker extends Peer {
         const localJobIds = Object.keys(this._work);
 
         for(let remoteJobId of remoteJobIds) {
-          if(localJobIds.indexOf(remoteJobId) > -1) {
+          if(localJobIds.includes(remoteJobId)) {
             const difference = 
               (message.timestamp - this._work[remoteJobId].enqueued);
             
@@ -378,14 +376,14 @@ class Worker extends Peer {
                 `Both jobs were enqueued at EXACTLY the same time. Cannot ` + 
                 `proceed, and both peers must drop the job.`);
               drop.push(remoteJobId);
-              this.removeJob(remoteJobId);
+              // this.removeJob(remoteJobId);
             } else {
               this._logger.log(
                 `Job ${remoteJobId} conflicts but was enqueued by peer ` + 
                 `before it was locally enqueued. The job will be confirmed ` + 
                 `to peer and dropped locally.`);
               got.push(remoteJobId);
-              this.removeJob(remoteJobId);
+              // this.removeJob(remoteJobId);
             }
           } else {
             this._logger.log(
@@ -422,17 +420,19 @@ class Worker extends Peer {
         return false;
       }
 
-      if(!this._work[jobId].available.hasOwnProperty(connection.signature)) {
-        this._logger.error(
-          `Response from ineligible worker: '${connection.signature}'!`);
-        this._logger.error(
-          `Eligble workers: ${Object.keys(this._work[jobId].available)}`);
-        return false;
+      if(!this._work[jobId].available.hasOwnProperty(
+        connection.remoteSignature)) {
+          this._logger.error(
+            `Response from ineligible worker: '${connection.remoteSignature}'!`);
+          this._logger.error(
+            `Eligble workers: ${Object.keys(this._work[jobId].available)}`);
+          return false;
       }
 
-      if(!this._work[jobId].available[connection.signature] === false) {
+      if(this._work[jobId].available[connection.remoteSignature] === true) {
         this._logger.error(
-          `Worker with signature '${connection.signature}' already responded!`);
+          `Worker with signature '${connection.remoteSignature}' already ` +
+          `responded!`);
         return false;
       }
 
@@ -450,7 +450,7 @@ class Worker extends Peer {
         
         this._work[jobId].confirmed++;
         this._work[jobId].responses++;
-        this._work[jobId].available[connection.signature] = true;
+        this._work[jobId].available[connection.remoteSignature] = true;
         
         if(!jobIdsResponded.includes(jobId)) {
           jobIdsResponded.push(jobId);
@@ -464,7 +464,7 @@ class Worker extends Peer {
           
         this._work[jobId].dropped++;
         this._work[jobId].responses++;
-        this._work[jobId].available[connection.signature] = true;
+        this._work[jobId].available[connection.remoteSignature] = true;
 
         if(!jobIdsResponded.includes(jobId)) {
           jobIdsResponded.push(jobId);
@@ -518,6 +518,7 @@ class Worker extends Peer {
       `${this.port} has completed work on job: ${jobId}`, colors.Reset);
     this.removeJob(jobId);
     delete this._work[jobId];
+    delete this._workQueue[jobId];
     return this.sendJobResult(jobId);
   };
 
