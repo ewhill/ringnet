@@ -208,6 +208,7 @@ class Worker extends Peer {
     const trustedPeers = this.trustedPeers;
 
     this._work[jobId] = {
+      isStarted: false,
       /*
        * Want > 50%, should only ever be between 50%-100%. Less than 50% may 
        * have unintended consequences such as double work, network congestion, 
@@ -423,7 +424,8 @@ class Worker extends Peer {
       if(!this._work[jobId].available.hasOwnProperty(
         connection.remoteSignature)) {
           this._logger.error(
-            `Response from ineligible worker: '${connection.remoteSignature}'!`);
+            `Response from ineligible worker: ` + 
+            `'${connection.remoteSignature}'!`);
           this._logger.error(
             `Eligble workers: ${Object.keys(this._work[jobId].available)}`);
           return false;
@@ -475,14 +477,18 @@ class Worker extends Peer {
     for(let jobId of jobIdsResponded) {
       if(this._work[jobId].responses >= this._work[jobId].needed) {
         if(this._work[jobId].confirmed >= this._work[jobId].needed) {
-          this._logger.log(`${this.port} has received all necessary responses; ` + 
-            `starting work on: ${jobId}`);
-          
-          this.processJob(jobId);
+          if(!this._work[jobId].isStarted) {
+            this._logger.log(
+              `${this.port} has received all necessary responses; starting ` +
+              `work on: ${jobId}`);
+
+            this._work[jobId].isStarted = true;
+            this.processJob(jobId);
+          }
         } else {
-          this._logger.log(`${this.port} has received all necessary responses ` + 
-            `but job was not approved by one or more other peers; dropping ` + 
-            `job: ${jobId}`);
+          this._logger.log(
+            `${this.port} has received all necessary responses but job was ` +
+            `not approved by one or more other peers; dropping job: ${jobId}`);
           this.removeJob(jobId);
         }
       }
