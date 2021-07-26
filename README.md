@@ -134,10 +134,6 @@ class MySuperCoolMessage extends Message {
     this.body = { data };
   }
 
-  clone() {
-    return new MySuperCoolMessage({ data: this.data });
-  }
-
   get data() { return this.body.data; }
   set data(data) { this.body = { ...this.body, data }; }
 }
@@ -161,10 +157,6 @@ class MySuperCoolMessage extends Message {
     super();
     const { data='' } = options;
     this.body = { data };
-  }
-
-  clone() {
-    return new MySuperCoolMessage({ data: this.data });
   }
 
   get data() { return this.body.data; }

@@ -7,12 +7,14 @@
   "scripts": {
     "coverage": "nyc tape 'test/test*.js'",
     "coverage-html": "nyc --reporter=html tape 'test/test*.js'",
+    "dist": "sh dist.sh",
     "test": "tape 'test/test*.js' | faucet",
     "setup": "openssl genrsa -out https.key.pem 2048 && openssl req -new -key https.key.pem -out https.csr.pem && openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem && node examples/peerSetup.js -o=first -b=2048 && node examples/peerSetup.js -o=second -b=2048 -ring=.ring.pem && node examples/peerSetup.js -o=third -b=2048 -ring=.ring.pem",
     "peer1": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26781 -ring=.ring.pub -signature=first.peer.signature -private=first.peer.pem -public=first.peer.pub",
     "peer2": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -signature=second.peer.signature -private=second.peer.pem -public=second.peer.pub",
     "peer3": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26783 -peers=127.0.0.1:26782 -ring=.ring.pub -signature=third.peer.signature -private=third.peer.pem -public=third.peer.pub -v",
-    "workingPeer": "node --no-warnings --no-deprecation examples/peerCoordination.js -private=first.peer.pem -public=first.peer.pub -signature=first.peer.signature -ring=.ring.pem"
+    "workingPeer": "node --no-warnings --no-deprecation examples/peerCoordination.js -private=first.peer.pem -public=first.peer.pub -signature=first.peer.signature -ring=.ring.pem",
+    "browser": "npm run dist && node lib/browser/simpleHttpsServer.js 8443"
   },
   "keywords": [
     "peer-to-peer",
@@ -38,9 +40,35 @@
     "ws": "^6.2.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.14",
+    "@babel/preset-env": "^7.13.12",
+    "aliasify": "^2.1.0",
+    "babelify": "^10.0.0",
+    "browserify-shim": "^3.8.14",
+    "crypto-browserify": "^3.12.0",
     "faucet": "0.0.1",
     "handlebars": "^4.5.3",
     "nyc": "^15.1.0",
-    "tape": "^4.13.3"
+    "tape": "^4.13.3",
+    "tinyify": "^3.0.0"
+  },
+  "browser": {
+    "ws": "./lib/browser/ws-shim.js",
+    "./RSAKeyPair": "./lib/browser/RSAKeyPair-shim",
+    "utils.js": "./lib/browser/utils-shim.js",
+    "./lib/utils.js": "./lib/browser/utils-shim.js"
+  },
+  "browserify": {
+    "transform": [
+      "aliasify"
+    ]
+  },
+  "aliasify": {
+    "aliases": {
+      "ws": "./lib/browser/ws-shim",
+      "./RSAKeyPair": "./lib/browser/RSAKeyPair-shim",
+      "utils.js": "./browser/utils-shim",
+      "../utils.js": "../browser/utils-shim"
+    }
   }
 }

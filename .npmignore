@@ -11,3 +11,10 @@ package-lock.json
 .imdone
 .imdone/*
 .DS_Store
+babel.config.json
+dist.sh
+dist/
+lib/browser
+lib/browser/*
+examples/peerCoordination
+examples/peerCoordination/*

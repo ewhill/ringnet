@@ -57,7 +57,7 @@ test("Message", (assert) => {
     "Generated header timestamp should be an instance of Date object.");
 
   const blankMessageJSON = blankMessage.toString();
-  blankMessage.from(simpleStringMessage);
+  blankMessage = Message.from(simpleStringMessage);
 
   assert.equal(blankMessage.toString(), simpleStringMessage.toString(), 
     "'from()' method should copy given message to current message.");
