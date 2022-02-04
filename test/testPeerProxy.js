@@ -10,17 +10,17 @@ const { createPeerProxy } = require('../lib/PeerProxy.js');
 // ----------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
 
-class CustomMessage extends Message {
-  constructor(options = {}) {
+class GreetingMessage extends Message {
+  constructor(options={}) {
     super();
-    const { data='' } = options;
-    this.body = { data };
+
+    const { greeting='' } = options;
+    this.greeting = greeting;
   }
 
-  get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  get greeting() { return this.body.greeting; }
+  set greeting(greeting) { this.body.greeting = greeting; }
 }
-
 
 const sink = () => {};
 const fakeLogger = { error: sink, info: sink, log: sink, warn: sink };
@@ -31,20 +31,6 @@ let peer3beta;
 let peer4beta;
 let peer4alpha;
 let peerProxy;
-
-class GreetingMessage extends Message {
-  constructor(options={}) {
-    super();
-
-    const {
-        greeting='',
-      } = options;
-    this.greeting = greeting;
-  }
-
-  get greeting() { return this.body.greeting; }
-  set greeting(greeting) { this.body = { ...this.body, greeting }; }
-}
 
 const exec = async ({ command, args=[], timeout=-1 }) => {
   return new Promise((resolve, reject) => {

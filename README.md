@@ -130,19 +130,19 @@ await peer.discover();
 class MySuperCoolMessage extends Message {
   constructor(options = {}) {
     super();
-    const { data='' } = options;
-    this.body = { data };
+    const { greeting='' } = options;
+    this.greeting = greeting;
   }
 
-  get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  get greeting() { return this.body.greeting; }
+  set greeting(greeting) { this.body.greeting = greeting; }
 }
 
 /** Creates and sends a new 'MySuperCoolMessage' with arbitrary data. */
 async function sendMySuperCoolMessage() {
   try {
     // Broadcast the message to all connected, verified peers
-    await peer.broadcast(new MySuperCoolMessage({ data: "hello!" });
+    await peer.broadcast(new MySuperCoolMessage({ greeting: "hello!" });
   } catch(e) {
     console.error(e.stack);
   }
@@ -155,12 +155,12 @@ async function sendMySuperCoolMessage() {
 class MySuperCoolMessage extends Message {
   constructor(options = {}) {
     super();
-    const { data='' } = options;
-    this.body = { data };
+    const { greeting='' } = options;
+    this.greeting = greeting;
   }
 
-  get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  get greeting() { return this.body.greeting; }
+  set greeting(data) { this.body.greeting = greeting; }
 }
 
 const mySuperCoolMessageHandler = (message, connection, logger=console) => {
