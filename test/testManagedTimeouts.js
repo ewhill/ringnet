@@ -3,10 +3,10 @@ const test = require('tape');
 
 const ManagedTimeouts = require('../lib/managedTimeouts.js');
 
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 const sleep = (ms) => {
 	return new Promise((resolve) => {
@@ -18,6 +18,8 @@ test("ManagedTimeouts", async (assert) => {
 	let threshold = 10;
 	let elapsed = -1;
 	let startTimeMs = -1;
+	let elapsedIntervalTimeMs = -1;
+	let startIntervalTimeMs = -1;
 
 	const startTimer = () => {
 		startTimeMs = Date.now();
@@ -46,7 +48,8 @@ test("ManagedTimeouts", async (assert) => {
 	managedTimeouts.setTimeout(endTimer, delayToTest);
 	await sleep(delayToTest + threshold);
 	const isWithinThreshold = 
-		elapsed > delayToTest - threshold && elapsed < (delayToTest + threshold);
+		(elapsed > (delayToTest - threshold) && 
+			elapsed < (delayToTest + threshold));
 	assert.true(isWithinThreshold, 
 		`Timeout should call function after given delay.`);
 

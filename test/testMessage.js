@@ -45,7 +45,7 @@ test("Message", (assert) => {
   assert.deepEqual(simpleStringMessage, clonedMessage, 
     "Generated and cloned should be equal.");
   
-  // firstMessage and secondMessage should have different toString values
+  // firstMessage and secondMessage should have the same toString values
   assert.equal(simpleStringMessage.toString(), clonedMessage.toString(), 
     "Generated and cloned Message toString() values should be equal.");
   
@@ -56,7 +56,6 @@ test("Message", (assert) => {
   assert.true(blankMessage.header.timestamp instanceof Date,
     "Generated header timestamp should be an instance of Date object.");
 
-  const blankMessageJSON = blankMessage.toString();
   blankMessage = Message.from(simpleStringMessage);
 
   assert.equal(blankMessage.toString(), simpleStringMessage.toString(), 

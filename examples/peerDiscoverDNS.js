@@ -4,70 +4,163 @@ const fs = require('fs');
 const dns = require('dns');
 const url = require('url');
 const readline = require('readline');
+const { EventEmitter } = require('events');
 
-const Expectation = require('./expectation');
+const ArgumentsParser = require('./ArgumentsParser');
 const { Peer, Message } = require('../index.js');
 
-const args = (new Expectation({
-    'seed': "", // optional
-    'port': "", // optional (defaults to 26781)
-    'peers': [","], // optional (defaults to [])
-    'ring': "", // required (defaults to ring.pub)
-    'private': "", // optional (defaults to peer.pem)
-    'public': "", // optional (defaults to peer.pub)
-    'signature': "", // required (peer won't start without)
-    'd': "", // optional
-    'range': [","] // optional (defaults to [26780,26790])
-  })).args;
+class CliMessage extends Message {
+  constructor(options = {}) {
+    super();
+    const { data='' } = options;
+    this.data = data;
+  }
 
-const nslookup = (host) => {
-  return new Promise((resolve, reject) => {
-    dns.resolve(host, (err, result) => {
-      return err ? reject(err) : resolve(result);
-    });
-  });
-};
-
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-
-const SEED_HOST = args.seed || process.env.RINGNET_SEED;
-
-var task = Promise.resolve(false);
-try {
-  var SEED_HOST_URL = url.parse(SEED_HOST);
-  task = nslookup(SEED_HOST_URL.hostname || SEED_HOST_URL.href);
-} catch(e) {
-  // Proceed, task stays as Promise.resolve
+  get data() { return this.body.data; }
+  set data(value='') { this.body = { ...this.body, data: value }; }
 }
 
-if(!args.peers) args.peers = [];
+class CliInputHandler extends EventEmitter {
+  canSend = true;
+  readInterface;
+  queue = [];
 
-return task
-  .then(ips => {
+  constructor({ canSend=true, queue=[] }) {
+    this.canSend = canSend;
+    this.queue = queue;
+  }
+
+  open() {
+    this.readInterface = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        prompt: 'NET> '
+      });
+    this.readInterface.on('line', this.onLineInput);
+  }
+
+  close() {
+    this.readInterface.close();
+    this.emit('close');
+  }
+
+  async onLineInput(line) {
+    if(!line || line.toString().length < 1) {
+      return;
+    }
+
+    line = line.toString();
+
+    if(line == 'exit') {
+      this.close();
+    } else if(line == 'peers') {
+      console.log(`\n\n${JSON.stringify(peer.getPeerList())}\n\n`);
+    } else if(line == 'queue') {
+      console.log(`\n\n${JSON.stringify(queue)}\n\n`);
+    } else if(line == 'queue on') {
+      canSend = false;
+    } else if(line == 'queue off') {
+      canSend = true;
+    } else if(line == 'queue send' || line == 'send') {
+      // Send all the queued messages
+      while(queue.length > 0) {
+        try {
+          const cliMessage = queue.splice(0,1)[0];
+          await peer.broadcast({ message: cliMessage });
+        } catch(e) {
+          console.error(e.stack);
+        }
+      }
+    } else {
+      const cliMessage = new CliMessage({ data: line });
+      if(!canSend) {
+        queue.push(cliMessage);
+        return;
+      }
+
+      try {
+        await peer.broadcast({ message: cliMessage });
+      } catch(e) {
+        console.error(e.stack);
+      }
+    }
+  }
+}
+
+const argumentsParser = new ArgumentsParser({
+    // --signature=path<str> [REQUIRED] Path to peer signature.
+    'signature': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --d=enabled<bool> [OPTIONAL] Defaults to false.
+    'daemon': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    'debug': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    'verbose': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    'v': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    // --peers=peers<array<str>> [OPTIONAL] Defaults to [].
+    'peers': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING_ARRAY,
+    // --port=port<int> [OPTIONAL] Defaults to 26781.
+    'port': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT,
+    // --private=path<str> [OPTIONAL] Defaults to "peer.pem".
+    'private': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --public=path<str> [OPTIONAL] Defaults to "peer.pub".
+    'public': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --range=ports<array<int>> [OPTIONAL] Defaults to [26780,26790].
+    'range': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT_ARRAY,
+    // --ring=path<str> [OPTIONAL] Defaults to "ring.pub".
+    'ring': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --seed=host<str> [OPTIONAL] Defaults to empty string.
+    'seed': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+  });
+const args = argumentsParser.parse();
+
+const nslookup = (host) => {
+    return new Promise((resolve, reject) => {
+      dns.resolve(host, (err, result) => {
+        return err ? reject(err) : resolve(result);
+      });
+    });
+  };
+
+let queue = [];
+let canSend = true;
+
+// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
+
+const main = async () => {
+  const SEED_HOST = args.seed || process.env.RINGNET_SEED;
+
+  if(!args.peers) {
+    args.peers = [];
+  }
+
+  try {
+    const seedHostUrl = url.parse(SEED_HOST);
+    const ips = await nslookup(seedHostUrl.hostname || seedHostUrl.href);
+
     console.log(ips);
-    if(ips && Array.isArray(ips) && ips.length > 0) {
-      if(SEED_HOST_URL.hostname) {
-        SEED_HOST_URL.hostname = ips[0]; // Change the hostname (minus port)
+    if(ips.length > 0) {
+      if(seedHostUrl.hostname) {
+        // Change the hostname (minus port)
+        seedHostUrl.hostname = ips[0];
       } else {
-        SEED_HOST_URL.href = ips[0];
+        seedHostUrl.href = ips[0];
       }
       
-      args.peers.push(SEED_HOST_URL.href); // ... and tack the port back on
+      // ... and tack the port back on
+      args.peers.push(seedHostUrl.href);
     }
-  })
-  .catch(e => {
-    if(typeof SEED_HOST == "string")
-      args.peers.push(SEED_HOST_URL.href);
-      
-    console.error(e);
-  })
-  .then(() => {
-    console.log(args); // Debugging...
-    
-    var p = new Peer({
+  } catch(err) {
+    // Proceed (with caution)...
+    if(typeof SEED_HOST == "string") {
+      args.peers.push(SEED_HOST);
+    }
+  }
+
+  console.log(args); // Debugging...
+  
+  const peer = new Peer({
       'port': args.port,
       'discoveryAddresses': args.peers,
       'discoveryRange': args.range,
@@ -78,101 +171,34 @@ return task
       'debug': args.debug || args.v || args.verbose
     });
     
-    // ----------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------
-    
-    var isReady = false;
-    p.on('ready', () => {
-      isReady = true;
-    });
-    
-    p.on('cliMessage', ({ message, connection }) => {
+  await peer.init();
+  
+  peer.bind(CliMessage).to(({ message, connection }) => {
       // TODO: Do something with the message (Update DB, Blockchain, etc...)
       console.log(`\n\n`,JSON.stringify(message, true),`\n\n`);
     });
-    
-    if(!args.d || args.d.length < 1) {
-      var queue = [];
-      var canSend = true;
-      
-      var readInterface = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        prompt: 'NET> '
-      });
-    
-      readInterface.on('line', (line) => {
-        if(line && line.toString().length > 0) {
-          line = line.toString();
-          
-          if(line == 'exit') { // User typed 'exit'
-            p.close();
-            readInterface.close(); //close return
-            process.exit(0);
-          } else if(line == 'peers') {
-            console.log(`\n\n${JSON.stringify(p.getPeerList())}\n\n`);
-          } else if(line == 'queue') {
-            console.log(`\n\n${JSON.stringify(queue)}\n\n`);
-          } else if(line == 'queue on') {
-            canSend = false;
-          } else if(line == 'queue off') {
-            canSend = true;
-          } else if(line == 'queue send' || line == 'send') {
-            // Send all the queued messages
-            try {
-              while(queue.length > 0)
-                p.broadcast({ message: queue.splice(0,1)[0] });
-            } catch(e) {
-              console.error(e.stack);
-            }
-          } else {
-            var message = new Message({
-              type: "cliMessage",
-              body: { 'data': line }
-            });
-            
-            if(isReady && canSend) {
-              try {
-                p.broadcast({ message });
-              } catch(e) {
-                console.error(e.stack);
-              }
-            }
-            else
-              queue.push(message);
-          }
-        }
-      });
-    }
-  });
 
-
-
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------
-
-
-//////////////////////////////////////
-// Take care of a clean exit below //
-////////////////////////////////////
-// function save(eventType) {
-//   console.log(`Exiting as a result of '${eventType}'`);
+  const cliInputHandler = new CliInputHandler();
   
-//   // if(!p.saved) {
-//   //   fs.writeFile(Date.now() + ".json", new Buffer(p.toString(), 'utf8'), () => {
-//   //     p.saved = true;
-//   //     process.exit(1);
-//   //   });
-//   // }
-  
-//   process.exit(1);
-// }
+  if(!args.daemon) {
+    cliInputHandler.open();
+    cliInputHandler.on('close', () => {
+      await peer.close();
+      process.exit(1);
+    })
+  }
 
-// [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`]
-//   .forEach((eventType) => {
-//     process.on(eventType, save.bind(null, eventType));
-//   });
+  // Take care of a clean exit.
+  const cleanup = async (eventType) => {
+      console.log(`Exiting as a result of '${eventType}'`);
+      await peer.close();
+      process.exit(1);
+    };
+
+  [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`]
+    .forEach((eventType) => {
+      process.on(eventType, cleanup.bind(null, eventType));
+    });
+};
+
+return main();

@@ -3,7 +3,7 @@
 const readline = require('readline');
 
 const colors = require('./colors');
-const Expectation = require('./expectation');
+const ArgumentsParser = require('./ArgumentsParser');
 const { Peer, Message } = require('../index.js');
 
 // -----------------------------------------------------------------------------
@@ -46,15 +46,23 @@ class AliasMessage extends Message {
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-const args = (new Expectation({
-    'port': "", // optional (defaults to 26780)
-    'peers': [","], // optional (defaults to [])
-    'ring': "", // required (defaults to ring.pub)
-    'private': "", // optional (defaults to peer.pem)
-    'public': "", // optional (defaults to peer.pub)
-    'signature': "", // required (peer won't start without)
-    'range': [","], // optional (defaults to [26780,26790])
-  })).args;
+const argumentsParser = new ArgumentsParser({
+    // --signature=path<str> [REQUIRED] Path to peer signature.
+    'signature': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --port=port<int> [OPTIONAL] Defaults to 26780.
+    'port': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT,
+    // --peers=peer<list<str>> [OPTIONAL] Defaults to [].
+    'peers': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING_ARRAY,
+    // --ring=path<str> [OPTIONAL] Defaults to "ring.pub".
+    'ring': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --private=path<str> [OPTIONAL] Defaults to "peer.pem".
+    'private': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --public=path<str> [OPTIONAL] Defaults to "peer.pub".
+    'public': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --range=ports<list<int>> [OPTIONAL] Defaults to [26780,26790].
+    'range': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT_ARRAY,
+  });
+const args = argumentsParser.parse();
 
 const isDebugEnabled = args.debug || args.v || args.verbose;
 const sink = () => {};
@@ -135,8 +143,8 @@ const peer = new Peer({
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
         const alias = 
-          addressBook.hasOwnProperty(connection.signature) ? 
-            addressBook[connection.signature] : 
+          addressBook.hasOwnProperty(connection.remoteSignature) ? 
+            addressBook[connection.remoteSignature] : 
             connection.address;
         peerMessage(`[${alias}]: ${message.text}`);
         readInterface.prompt();
@@ -146,25 +154,25 @@ const peer = new Peer({
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
         const previous = 
-          addressBook.hasOwnProperty(connection.signature) ? 
-            addressBook[connection.signature] : 
+          addressBook.hasOwnProperty(connection.remoteSignature) ? 
+            addressBook[connection.remoteSignature] : 
             connection.address;
         netLog(
           `[NET] ${connection.address} (previously ${previous}, will now be ` +
           `known as ${message.alias}`);
-        addressBook[connection.signature] = message.alias;
+        addressBook[connection.remoteSignature] = message.alias;
         readInterface.prompt();
       });
 
     peer.on('connection', (connection) => {
         process.stdout.clearLine();
         process.stdout.cursorTo(0);
-        if(addressBook.hasOwnProperty(connection.signature)) {
+        if(addressBook.hasOwnProperty(connection.remoteSignature)) {
           netLog(
-            `[NET] ${addressBook[connection.signature]} has rejoined the ` +
+            `[NET] ${addressBook[connection.remoteSignature]} has rejoined the ` +
             `chat.`);
         } else {
-          addressBook[connection.signature] = connection.address;
+          addressBook[connection.remoteSignature] = connection.address;
           netLog(`[NET] ${connection.address} has joined the chat.`);
         }
         readInterface.prompt();

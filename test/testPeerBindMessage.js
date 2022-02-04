@@ -15,10 +15,6 @@ class CustomMessage extends Message {
     this.body = { data };
   }
 
-  clone() {
-    return new CustomMessage({ data: this.data });
-  }
-
   get data() { return this.body.data; }
   set data(data) { this.body = { ...this.body, data }; }
 }
@@ -51,16 +47,17 @@ test("PeerBindMessage", async (assert) => {
 
   const testMessageData = 'Hey, let\'s test this custom messsage bind!';
 
+  let receivePromiseResolve;
+  const receivePromise = new Promise((resolve) => {
+      receivePromiseResolve = resolve;
+    });
+
   const testHandler = async (message, connection, logger) => {
     assert.equal(message.data, testMessageData, 
       'Message with custom Message header type should be received by custom ' +
       'event listener.');
     assert.ok(true, `Custom event listener fired; test passed.`);
-    
-    await peer2.close();
-    await peer1.close();
-    
-    assert.end();
+    receivePromiseResolve();
   };
 
   await peer1.init();
@@ -69,5 +66,30 @@ test("PeerBindMessage", async (assert) => {
 
   peer2.bind(CustomMessage).to(testHandler);
   await peer1.broadcast(new CustomMessage({ data: testMessageData }));
+  await receivePromiseResolve;
+
+  peer2.unbind(CustomMessage, testHandler);
+  assert.equals(peer2.requestHandlers_[CustomMessage.name].length, 0, 
+    'Calling unbind should remove handler from peer');
+
+  const newTestHandler = async (message, connection, logger) => {
+    // No-op.
+  };
+
+  peer2.bind(CustomMessage).to(newTestHandler);
+  peer2.bind(CustomMessage).to(newTestHandler);
+  peer2.bind(CustomMessage).to(newTestHandler);
+
+  assert.equals(peer2.requestHandlers_[CustomMessage.name].length, 3, 
+    'Calling bind multiple times with the same handler should add to peer');
+
+  peer2.unbindAll(CustomMessage);
+  assert.equals(peer2.requestHandlers_[CustomMessage.name].length, 0, 
+    'Calling unbindAll should remove all handlers from peer');
+  
+  await peer2.close();
+  await peer1.close();
+  
+  assert.end();
 });
 
