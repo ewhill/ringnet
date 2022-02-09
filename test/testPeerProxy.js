@@ -238,129 +238,136 @@ const after = async () => {
   await peer4alpha.close();
 };
 
-const runTest = async (assert, testCase) => {
-  await before();
-  await testCase(assert);
-  await after();
-};
-
-test("PeerProxy", async (assert) => {
+// Peer1 (alpha) -->
+//   --> Peer2 (alpha)
+//   --> Peer3 (beta)
+test("PeerProxy_proxiesMessageFromAlphaToBeta", async (assert) => {
+  assert.plan(8);
   await setup();
+  await before();
 
-  await runTest(assert, testProxiesMessageFromAlphaToBeta);
-  await runTest(assert, testProxiesMessageFromAlphaOtherToBeta);
-  await runTest(assert, testProxiesMessageFromBetaToAlpha);
-  assert.pass(`PeerProxy successfully proxies messages; test passed.`);
-
-  await teardown();
-  assert.end();
-});
-
-const testProxiesMessageFromAlphaToBeta = async (assert) => {
-  // Peer1 (alpha) -->
-  //   --> Peer2 (alpha)
-  //   --> Peer3 (beta)
   const greeting = 
     new GreetingMessage({ greeting: 'Hello from peer1alpha!' });
 
-  let peer2alphaResolver = Promise.reject;
-  const peer2alphaPromise = new Promise((resolve) => {
-      peer2alphaResolver = resolve;
-    });
-  peer2alpha.bind(GreetingMessage).to(peer2alphaResolver);
+  let peer2alphaReceivePromiseResolver;
+  const peer2alphaReceivePromise = new Promise((resolve) => {
+    peer2alphaReceivePromiseResolver = resolve;
+  });
+  const peer2alphaMessageHandler = (message) => {
+    assert.ok('peer2alpha should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer2alphaReceivePromiseResolver();
+  };
+  peer2alpha.bind(GreetingMessage).to(peer2alphaMessageHandler);
 
-  let peer3betaResolver = Promise.reject;
-  const peer3betaPromise = new Promise((resolve) => {
-      peer3betaResolver = resolve;
-    });
-  peer3beta.bind(GreetingMessage).to(peer3betaResolver);
+  let peer3betaReceivePromiseResolver;
+  const peer3betaReceivePromise = new Promise((resolve) => {
+    peer3betaReceivePromiseResolver = resolve;
+  });
+  const peer3betaMessageHandler = (message) => {
+    assert.ok('peer3beta should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer3betaReceivePromiseResolver();
+  };
+  peer3beta.bind(GreetingMessage).to(peer3betaMessageHandler);
 
+  console.log("Sending greeting from peer1alpha...");
   await peer1alpha.broadcast(greeting);
-  const peer2alphaMessage = await peer2alphaPromise;
-  const peer3betaMessage = await peer3betaPromise;
-    
-  assert.equal(peer2alphaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer2alphaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer2alphaMessage.timestamp.toString(), greeting.timestamp.toString());
-  assert.equal(peer3betaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer3betaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer3betaMessage.timestamp.toString(), greeting.timestamp.toString());
 
-  peer2alpha.unbind(GreetingMessage, peer2alphaResolver);
-  peer3beta.unbind(GreetingMessage, peer3betaResolver);
-};
+  await Promise.all([ peer2alphaReceivePromise, peer3betaReceivePromise ]);
+  await after();
+  await teardown();
+});
 
-const testProxiesMessageFromAlphaOtherToBeta = async (assert) => {
-  // Peer2 (alpha) -->
-  //   --> Peer1 (alpha)
-  //   --> Peer3 (beta)
+// Peer2 (alpha) -->
+//   --> Peer1 (alpha)
+//   --> Peer3 (beta)
+test("PeerProxy_proxiesMessageFromAlphaOtherToBeta", async (assert) => {
+  assert.plan(8);
+  await setup();
+  await before();
+
   const greeting = 
     new GreetingMessage({ greeting: 'Hello from peer2alpha!' });
 
-  let peer1alphaResolver;
-  const peer1alphaPromise = new Promise((resolve) => {
-      peer1alphaResolver = resolve;
-    });
-  peer1alpha.bind(GreetingMessage).to(peer1alphaResolver);
+  let peer1alphaReceivePromiseResolver;
+  const peer1alphaReceivePromise = new Promise((resolve) => {
+    peer1alphaReceivePromiseResolver = resolve;
+  });
+  const peer1alphaMessageHandler = (message) => {
+    assert.ok('peer1alpha should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer1alphaReceivePromiseResolver();
+  };
+  peer1alpha.bind(GreetingMessage).to(peer1alphaMessageHandler);
 
-  let peer3betaResolver;
-  const peer3betaPromise = new Promise((resolve) => {
-      peer3betaResolver = resolve;
-    });
-  peer3beta.bind(GreetingMessage).to(peer3betaResolver);
+  let peer3betaReceivePromiseResolver;
+  const peer3betaReceivePromise = new Promise((resolve) => {
+    peer3betaReceivePromiseResolver = resolve;
+  });
+  const peer3betaMessageHandler = (message) => {
+    assert.ok('peer3beta should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer3betaReceivePromiseResolver();
+  };
+  peer3beta.bind(GreetingMessage).to(peer3betaMessageHandler);
 
   await peer2alpha.broadcast(greeting);
-  const peer1alphaMessage = await peer1alphaPromise;
-  const peer3betaMessage = await peer3betaPromise;
 
-  assert.equal(peer1alphaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer1alphaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer1alphaMessage.timestamp.toString(), greeting.timestamp.toString());
-  assert.equal(peer3betaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer3betaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer3betaMessage.timestamp.toString(), greeting.timestamp.toString());
+  await Promise.all([ peer1alphaReceivePromise, peer3betaReceivePromise ]);
+  await after();
+  await teardown();
+});
 
-  peer1alpha.unbind(GreetingMessage, peer1alphaResolver);
-  peer3beta.unbind(GreetingMessage, peer3betaResolver);
-};
+// Peer3 (beta) -->
+//   --> Peer1 (alpha)
+//   --> Peer2 (alpha)
+test("PeerProxy_proxiesMessageFromBetaToAlpha", async (assert) => {
+  assert.plan(8);
+  await setup();
+  await before();
 
-const testProxiesMessageFromBetaToAlpha = async (assert) => {
-  // Peer3 (beta) -->
-  //   --> Peer1 (alpha)
-  //   --> Peer2 (alpha)
   const greeting = 
     new GreetingMessage({ greeting: 'Hello from peer3beta!' });
 
-  let peer1alphaResolver;
-  const peer1alphaPromise = new Promise((resolve) => {
-      peer1alphaResolver = resolve;
-    });
-  peer1alpha.bind(GreetingMessage).to(peer1alphaResolver);
+  let peer1alphaReceivePromiseResolver;
+  const peer1alphaReceivePromise = new Promise((resolve) => {
+    peer1alphaReceivePromiseResolver = resolve;
+  });
+  const peer1alphaMessageHandler = (message) => {
+    assert.ok('peer1alpha should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer1alphaReceivePromiseResolver();
+  };
+  peer1alpha.bind(GreetingMessage).to(peer1alphaMessageHandler);
 
-  let peer2alphaResolver;
-  const peer2alphaPromise = new Promise((resolve) => {
-      peer2alphaResolver = resolve;
-    });
-  peer2alpha.bind(GreetingMessage).to(peer2alphaResolver);
+  let peer2alphaReceivePromiseResolver;
+  const peer2alphaReceivePromise = new Promise((resolve) => {
+    peer2alphaReceivePromiseResolver = resolve;
+  });
+  const peer2alphaMessageHandler = (message) => {
+    assert.ok('peer2alpha should receive message broadcasted from peer1alpha.');
+    assert.equal(message.hash.toString(), greeting.hash.toString());
+    assert.equal(message.body.toString(), greeting.body.toString());
+    assert.equal(message.timestamp.toString(), greeting.timestamp.toString());
+    return peer2alphaReceivePromiseResolver();
+  };
+  peer2alpha.bind(GreetingMessage).to(peer2alphaMessageHandler);
 
   await peer3beta.broadcast(greeting);
-  const peer1alphaMessage = await peer1alphaPromise;
-  const peer2alphaMessage = await peer2alphaPromise;
 
-  assert.equal(peer1alphaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer1alphaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer1alphaMessage.timestamp.toString(), greeting.timestamp.toString());
-  assert.equal(peer2alphaMessage.hash.toString(), greeting.hash.toString());
-  assert.equal(peer2alphaMessage.body.toString(), greeting.body.toString());
-  assert.equal(
-    peer2alphaMessage.timestamp.toString(), greeting.timestamp.toString());
-
-  peer1alpha.unbind(GreetingMessage, peer1alphaResolver);
-  peer2alpha.unbind(GreetingMessage, peer2alphaResolver);
-};
+  await Promise.all([ peer1alphaReceivePromise, peer2alphaReceivePromise ]);
+  await after();
+  await teardown();
+});
 

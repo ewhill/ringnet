@@ -12,11 +12,11 @@ class CustomMessage extends Message {
   constructor(options = {}) {
     super();
     const { data='' } = options;
-    this.body = { data };
+    this.data = data;
   }
 
   get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  set data(data) { this.body.data = data; }
 }
 
 test("PeerBindMessage", async (assert) => {
@@ -68,9 +68,20 @@ test("PeerBindMessage", async (assert) => {
   await peer1.broadcast(new CustomMessage({ data: testMessageData }));
   await receivePromiseResolve;
 
-  peer2.unbind(CustomMessage, testHandler);
+  const removed = peer2.unbind(CustomMessage, testHandler);
   assert.equals(peer2.requestHandlers_[CustomMessage.name].length, 0, 
     'Calling unbind should remove handler from peer');
+
+  assert.equals(removed.length, 1, 
+    'Returned unbind array value should be correct length.');
+
+  assert.equals(removed[0].constructor.name, 'RequestHandler',
+    'Returned handler via unbind should be of type RequestHandler.');
+
+  assert.equals(
+    removed[0]._id,
+    testHandler.__requestHandlerIds[0], 
+    'Returned unbind array value should contain unbound handler.');
 
   const newTestHandler = async (message, connection, logger) => {
     // No-op.

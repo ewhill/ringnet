@@ -33,10 +33,10 @@ test("Message", (assert) => {
     "Header hash should be updated when Message body is set.");
     
   // Generate new simple, string Message
-  let simpleStringMessage = new Message({ body: "hello world!" });
+  let simpleStringMessage = new Message({ body: { greeting: "hello world!" } });
   
-  assert.equal(simpleStringMessage.body, "hello world!", 
-    "Constructed with string body should have body correctly set.");
+  assert.equal(simpleStringMessage.body.greeting, "hello world!", 
+    "Constructed with body solo property string should have body correctly set.");
     
   // Clone firstMessage
   let clonedMessage = new Message(simpleStringMessage);

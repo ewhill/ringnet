@@ -14,15 +14,11 @@ class TestMessage extends Message {
   constructor(options = {}) {
     super();
     const { data='' } = options;
-    this.body = { data };
-  }
-
-  clone() {
-    return new TestMessage({ data: this.data });
+    this.data = data;
   }
 
   get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  set data(data) { this.body.data = data; }
 }
 
 let peer1, peer2;

@@ -6,14 +6,14 @@ const { Peer, Message } = require('../index.js');
 class PingMessage extends Message {
 	constructor() {
 		super();
-		this.body = 'ping';
+		this.body = { direction: 'ping' };
 	}
 }
 
 class PongMessage extends Message {
 	constructor() {
 		super();
-		this.body = 'pong';
+		this.body = {direction: 'pong' };
 	}
 }
 
