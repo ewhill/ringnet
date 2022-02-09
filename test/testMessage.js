@@ -27,10 +27,20 @@ test("Message", (assert) => {
     "Header hash should be set when Message is constructed.");
 
   const messageHeaderHashBefore = messageWithTypeAndBody.header.hash;
-  messageWithTypeAndBody.body = "blah";
+  messageWithTypeAndBody.body = { 'test': 'blah' };
 
   assert.notEqual(messageWithTypeAndBody.header.hash, messageHeaderHashBefore, 
     "Header hash should be updated when Message body is set.");
+
+  const messageHeaderHashChanged = messageWithTypeAndBody.header.hash;
+  messageWithTypeAndBody.body.test = 'henlo';
+  assert.notEqual(messageWithTypeAndBody.header.hash, messageHeaderHashChanged, 
+    "Header hash should be updated when Message body property is changed.");
+
+  const messageHeaderHashUpdated = messageWithTypeAndBody.header.hash;
+  messageWithTypeAndBody.body.henlo = 'test';
+  assert.notEqual(messageWithTypeAndBody.header.hash, messageHeaderHashUpdated, 
+    "Header hash should be updated when Message body property is added.");
     
   // Generate new simple, string Message
   let simpleStringMessage = new Message({ body: { greeting: "hello world!" } });
