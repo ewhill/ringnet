@@ -13,15 +13,11 @@ class TextMessage extends Message {
   constructor(options = {}) {
     super();
     const { text='' } = options;
-    this.body = { text };
-  }
-
-  clone() {
-    return new TextMessage({ text: this.text });
+    this.text = text;
   }
 
   get text() { return this.body.text; }
-  set text(value) { this.body = { ...this.body, text: value }; }
+  set text(value) { this.body.text = value; }
 }
 
 const sink = () => {};

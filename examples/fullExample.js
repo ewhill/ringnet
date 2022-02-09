@@ -5,15 +5,11 @@ class MySuperCoolMessage extends Message {
   constructor(options = {}) {
     super();
     const { data='' } = options;
-    this.body = { data };
-  }
-
-  clone() {
-    return new MySuperCoolMessage({ data: this.data });
+    this.data = data;
   }
 
   get data() { return this.body.data; }
-  set data(data) { this.body = { ...this.body, data }; }
+  set data(value) { this.body.data = value; }
 }
 
 const firstPeer = new Peer({

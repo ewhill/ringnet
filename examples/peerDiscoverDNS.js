@@ -17,7 +17,7 @@ class CliMessage extends Message {
   }
 
   get data() { return this.body.data; }
-  set data(value='') { this.body = { ...this.body, data: value }; }
+  set data(value='') { this.body.data = value; }
 }
 
 class CliInputHandler extends EventEmitter {

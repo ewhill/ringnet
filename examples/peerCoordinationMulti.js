@@ -9,33 +9,21 @@ class TakeRequestMessage extends Message {
   constructor(options = {}) {
     super();
     const { jobs=[], timestamp=Date.now() } = options;
-    this.body = { jobs, timestamp };
-  }
-
-  clone() {
-    return new TakeRequestMessage({
-        jobs: this.jobs,
-        timestamp: this.timestamp
-      });
+    this.jobs = jobs;
+    this.timestamp = timestamp;
   }
 
   get jobs() { return this.body.jobs; }
-  set jobs(value) { this.body = { ...this.body, jobs: value }; }
+  set jobs(value) { this.body.jobs = value; }
   get timestamp() { return this.body.timestamp; }
-  set timestamp(value) {
-    this.body = { ...this.body, timestamp: value };
-  }
+  set timestamp(value) { this.body.timestamp = value; };
 }
 
 class JobMessage extends Message {
   constructor(options = {}) {
     super();
     const { job={} } = options;
-    this.body = { job };
-  }
-
-  clone() {
-    return new JobMessage({ job: this.job });
+    this.job = job;
   }
 
   get job() { return this.body.job; }
@@ -46,32 +34,25 @@ class TakeResponseMessage extends Message {
   constructor(options = {}) {
     super();
     const { got=[], drop=[] } = options;
-    this.body = { got, drop };
-  }
-
-  clone() {
-    return new TakeResponseMessage({ got: this.got, drop: this.drop });
+    this.got = got;
+    this.drop = drop;
   }
 
   get got() { return this.body.got; }
-  set got(value) { this.body = { ...this.body, got: value }; }
+  set got(value) { this.body.got = value; }
   get drop() { return this.body.drop; }
-  set drop(value) { this.body = { ...this.body, drop: value }; }
+  set drop(value) { this.body.drop = value; }
 }
 
 class JobResultMessage extends Message {
   constructor(options = {}) {
     super();
     const { jobId } = options;
-    this.body = { jobId };
-  }
-
-  clone() {
-    return new JobResultMessage({ jobId: this.jobId });
+    this.jobId = jobId;
   }
 
   get jobId() { return this.body.jobId; }
-  set jobId(value) { this.body = { ...this.body, jobId: value }; }
+  set jobId(value) { this.body.jobId = value; }
 }
 
 // -----------------------------------------------------------------------------

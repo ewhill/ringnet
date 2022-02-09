@@ -15,30 +15,22 @@ class TextMessage extends Message {
   constructor(options = {}) {
     super();
     const { text='' } = options;
-    this.body = { text };
-  }
-
-  clone() {
-    return new TextMessage({ text: this.text });
+    this.text = text;
   }
 
   get text() { return this.body.text; }
-  set text(value) { this.body = { ...this.body, text: value }; }
+  set text(value) { this.body.text = value; }
 }
 
 class AliasMessage extends Message {
   constructor(options = {}) {
     super();
     const { alias='' } = options;
-    this.body = { alias };
-  }
-
-  clone() {
-    return new AliasMessage({ alias: this.alias });
+    this.alias = alias;
   }
 
   get alias() { return this.body.alias; }
-  set alias(value) { this.body = { ...this.body, alias: value }; }
+  set alias(value) { this.body.alias = value; }
 }
 
 // -----------------------------------------------------------------------------
