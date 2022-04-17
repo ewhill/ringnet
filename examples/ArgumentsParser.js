@@ -80,18 +80,18 @@ class ArgumentsParser {
             break;
           case ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL_ARRAY:
             value = ArgumentsParser.parseValueAsArray(value);
-            value = value.map(i => !!i);
+            value = value.map((i) => !!i);
             break;
           case ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING_ARRAY:
             value = ArgumentsParser.parseValueAsArray(value);
             break;
           case ArgumentsParser.ARGUMENT_TYPE_ENUM.INT_ARRAY:
             value = ArgumentsParser.parseValueAsArray(value);
-            value = value.map(i => parseInt(i));
+            value = value.map(parseInt);
             break;
           case ArgumentsParser.ARGUMENT_TYPE_ENUM.FLOAT_ARRAY:
             value = ArgumentsParser.parseValueAsArray(value);
-            value = value.map(i => parseFloat(i));
+            value = value.map(parseFloat);
             break;
           default:
             value = value;
