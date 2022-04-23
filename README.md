@@ -60,6 +60,10 @@ const peer = new Peer(options);
   - **_Required_**, defaults to "peer.pem"
   - This is the path/location of the peer private key file. This is necessary in order to communicate securely with other peers in the decentralized network
 
+#### **publicAddress** (string)
+  - *Optional*, defaults to `undefined`
+  - This is the address which the peer will send to other peers. Peers will use this address to relay to other peers in the network for automatic discovery. If no value is given, the peer will attempt to determine it's public IP from a public API. To prevent this behavior, simply pass an empty string for this value.
+
 #### **publicKeyPath** (string)
   - *Optional*, defaults to "peer.pub"
   - This is the path/location of the peer public key file. This is necessary in order to communicate securely with other peers in the decentralized network. If missing, the publicKey will attempt to be derrived from privateKey, if privateKey is given and valid.
