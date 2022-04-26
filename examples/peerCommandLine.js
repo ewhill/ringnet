@@ -11,6 +11,12 @@ const { Peer, Message } = require('../index.js');
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
+class GoodbyeMessage extends Message {
+  constructor(options = {}) {
+    super();
+  }
+}
+
 class TextMessage extends Message {
   constructor(options = {}) {
     super();
@@ -53,6 +59,8 @@ const argumentsParser = new ArgumentsParser({
     'public': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
     // --range=ports<list<int>> [OPTIONAL] Defaults to [26780,26790].
     'range': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT_ARRAY,
+    // --publicAddress=address<str> [OPTIONAL] Defaults to undefined.
+    'publicAddress': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
   });
 const args = argumentsParser.parse();
 
@@ -112,7 +120,8 @@ const peer = new Peer({
       port: args.port,
     },
     discoveryConfig,
-    logger
+    publicAddress: args.publicAddress,
+    logger,
   });
 
 // -----------------------------------------------------------------------------
@@ -137,7 +146,7 @@ const peer = new Peer({
         const alias = 
           addressBook.hasOwnProperty(connection.remoteSignature) ? 
             addressBook[connection.remoteSignature] : 
-            connection.address;
+            connection.peerAddress;
         peerMessage(`[${alias}]: ${message.text}`);
         readInterface.prompt();
       });
@@ -148,11 +157,22 @@ const peer = new Peer({
         const previous = 
           addressBook.hasOwnProperty(connection.remoteSignature) ? 
             addressBook[connection.remoteSignature] : 
-            connection.address;
+            connection.peerAddress;
         netLog(
-          `[NET] ${connection.address} (previously ${previous}, will now be ` +
+          `[NET] ${connection.peerAddress} (previously ${previous}, will now be ` +
           `known as ${message.alias}`);
         addressBook[connection.remoteSignature] = message.alias;
+        readInterface.prompt();
+      });
+
+    peer.bind(GoodbyeMessage).to((message, connection) => {
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        const alias = 
+          addressBook.hasOwnProperty(connection.remoteSignature) ? 
+            addressBook[connection.remoteSignature] : 
+            connection.peerAddress;
+        netLog(`[NET] ${alias} has left the chat.`);
         readInterface.prompt();
       });
 
@@ -164,8 +184,8 @@ const peer = new Peer({
             `[NET] ${addressBook[connection.remoteSignature]} has rejoined the ` +
             `chat.`);
         } else {
-          addressBook[connection.remoteSignature] = connection.address;
-          netLog(`[NET] ${connection.address} has joined the chat.`);
+          addressBook[connection.remoteSignature] = connection.peerAddress;
+          netLog(`[NET] ${connection.peerAddress} has joined the chat.`);
         }
         readInterface.prompt();
       });
@@ -208,6 +228,11 @@ const peer = new Peer({
         } else {
           switch(line.toLowerCase()) {
             case 'exit':
+              try {
+                await peer.broadcast(new GoodbyeMessage());
+              } catch(err) {
+                /* Do nothing. */
+              }
               await peer.close();
               readInterface.close();
               process.exit(0);

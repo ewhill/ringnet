@@ -30,6 +30,7 @@ const firstPeer = new Peer({
   publicKeyPath: 'first.peer.pub',
   privateKeyPath: 'first.peer.pem',
   signaturePath: 'first.peer.signature',
+  publicAddress: '127.0.0.1:26780',
 });
 
 const secondPeer = new Peer({
@@ -50,6 +51,7 @@ const secondPeer = new Peer({
   publicKeyPath: 'second.peer.pub',
   privateKeyPath: 'second.peer.pem',
   signaturePath: 'second.peer.signature',
+  publicAddress: '127.0.0.1:26781',
 });
 
 const main = async () => {

@@ -21,6 +21,7 @@ test("PeerExportImportTest", async (assert) => {
       httpsServerConfig: {
         port: 26780,
       },
+      publicAddress: "127.0.0.1:26780",
       logger: fakeLogger
     });
 

@@ -37,6 +37,7 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
     publicKeyPath: "first.peer.pub",
     privateKeyPath: "first.peer.pem",
     ringPublicKeyPath: ".ring.pub",
+    publicAddress: "127.0.0.1:8181",
     logger: fakeLogger,
   });
 
@@ -92,6 +93,7 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
         end: 8190
       }
     },
+    publicAddress: "127.0.0.1:9191",
     logger: fakeLogger,
   });
 

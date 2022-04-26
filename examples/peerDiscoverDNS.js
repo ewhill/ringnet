@@ -168,6 +168,7 @@ const main = async () => {
       'publicKey': args.public,
       'privateKey': args.private,
       'signature': args.signature,
+      'publicAddress': `127.0.0.1:${args.port}`,
       'debug': args.debug || args.v || args.verbose
     });
     

@@ -44,6 +44,7 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
 		publicKeyPath: "first.peer.pub",
 		signaturePath: "first.peer.signature",
 		ringPublicKeyPath: ".ring.pub",
+		publicAddress: "127.0.0.1:26780",
 		logger: fakeLogger,
 	});
 
@@ -62,6 +63,7 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
 		discoveryConfig: {
 			addresses: [ "127.0.0.1:26780" ]
 		},
+		publicAddress: "127.0.0.1:26781",
 		logger: fakeLogger,
 	});
 
@@ -71,8 +73,8 @@ test("PeerBYOHTTPSServerTest", async (assert) => {
 	await peer2.discover();
 
 	peer2.bind(PingMessage).to(PingMessageHandler);
-	peer1.bind(PongMessage).to(async function() {
-		PongMessageHandler.apply(null, arguments);
+	peer1.bind(PongMessage).to(async (...args) => {
+		PongMessageHandler(...args);
 		await peer1.close();
 		await peer2.close();
 

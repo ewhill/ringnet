@@ -100,6 +100,7 @@ for(let i=0; i<nPeers; i++) {
     publicKeyPath: `${keyNames[i]}.peer.pub`,
     privateKeyPath: `${keyNames[i]}.peer.pem`,
     ringPublicKeyPath: `.ring.pub`,
+    publicAddress: `127.0.0.1:${port}`,
     logger: fakeLogger
   };
 

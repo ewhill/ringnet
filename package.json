@@ -9,12 +9,12 @@
     "coverage-html": "nyc --reporter=html tape 'test/**/test*.js'",
     "test": "tape 'test/test*.js' | faucet",
     "setup": "openssl genrsa -out https.key.pem 2048 && openssl req -new -key https.key.pem -out https.csr.pem && openssl x509 -req -days 9999 -in https.csr.pem -signkey https.key.pem -out https.cert.pem && node examples/peerSetup.js -o=first -b=2048 && node examples/peerSetup.js -o=second -b=2048 -ring=.ring.pem && node examples/peerSetup.js -o=third -b=2048 -ring=.ring.pem",
-    "peer1": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26781 -peers=127.0.0.1:26782,127.0.0.1:26783 -ring=.ring.pub -signature=first.peer.signature -private=first.peer.pem -public=first.peer.pub",
-    "peer2": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781,127.0.0.1:26783 -ring=.ring.pub -signature=second.peer.signature -private=second.peer.pem -public=second.peer.pub",
-    "peer3": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26783 -peers=127.0.0.1:26781,127.0.0.1:26782 -ring=.ring.pub -signature=third.peer.signature -private=third.peer.pem -public=third.peer.pub -v",
-    "worker1": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26781 -private=first.peer.pem -public=first.peer.pub -signature=first.peer.signature -ring=.ring.pem --publicAddress=127.0.0.1:26781/worker -console",
-    "worker2": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26782 -peers=127.0.0.1:26781/worker -private=second.peer.pem -public=second.peer.pub -signature=second.peer.signature -ring=.ring.pem --publicAddress=127.0.0.1:26782/worker",
-    "worker3": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26783 -peers=127.0.0.1:26781/worker -private=third.peer.pem -public=third.peer.pub -signature=third.peer.signature -ring=.ring.pem --publicAddress=127.0.0.1:26783/worker"
+    "peer1": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26781 -ring=.ring.pub -signature=first.peer.signature -private=first.peer.pem -public=first.peer.pub -publicAddress=127.0.0.1:26781",
+    "peer2": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26782 -peers=127.0.0.1:26781 -ring=.ring.pub -signature=second.peer.signature -private=second.peer.pem -public=second.peer.pub -publicAddress=127.0.0.1:26782",
+    "peer3": "node --no-warnings --no-deprecation examples/peerCommandLine.js -port=26783 -peers=127.0.0.1:26781 -ring=.ring.pub -signature=third.peer.signature -private=third.peer.pem -public=third.peer.pub -v -publicAddress=127.0.0.1:26783",
+    "worker1": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26781 -private=first.peer.pem -public=first.peer.pub -signature=first.peer.signature -ring=.ring.pem -publicAddress=127.0.0.1:26781/worker -console",
+    "worker2": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26782 -peers=127.0.0.1:26781/worker -private=second.peer.pem -public=second.peer.pub -signature=second.peer.signature -ring=.ring.pem -publicAddress=127.0.0.1:26782/worker",
+    "worker3": "node --no-warnings --no-deprecation examples/peerCoordination/index.js -port=26783 -peers=127.0.0.1:26781/worker -private=third.peer.pem -public=third.peer.pub -signature=third.peer.signature -ring=.ring.pem -publicAddress=127.0.0.1:26783/worker"
   },
   "keywords": [
     "peer-to-peer",

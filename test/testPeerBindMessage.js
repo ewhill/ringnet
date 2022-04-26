@@ -31,6 +31,7 @@ test("PeerBindMessage", async (assert) => {
       httpsServerConfig: {
         port: 26784,
       },
+      publicAddress: "127.0.0.1:26784",
       logger: fakeLogger
     });
   
@@ -42,6 +43,7 @@ test("PeerBindMessage", async (assert) => {
     httpsServerConfig: {
       port: 26785,
     },
+    publicAddress: "127.0.0.1:26785",
     logger: fakeLogger,
   });
 

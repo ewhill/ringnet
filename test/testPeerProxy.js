@@ -163,6 +163,7 @@ const before = async () => {
     httpsServerConfig: {
       port: 26781,
     },
+    publicAddress: "127.0.0.1:26781",
     logger: fakeLogger
   });
 
@@ -174,6 +175,7 @@ const before = async () => {
     httpsServerConfig: {
       port: 26782,
     },
+    publicAddress: "127.0.0.1:26782",
     logger: fakeLogger,
   });
 
@@ -185,6 +187,7 @@ const before = async () => {
     httpsServerConfig: {
       port: 26783,
     },
+    publicAddress: "127.0.0.1:26783",
     logger: fakeLogger,
   });
 
@@ -196,6 +199,7 @@ const before = async () => {
     httpsServerConfig: {
       port: 26784,
     },
+    publicAddress: "127.0.0.1:26784",
     logger: fakeLogger,
   });
 
@@ -207,6 +211,7 @@ const before = async () => {
     httpsServerConfig: {
       port: 26785,
     },
+    publicAddress: "127.0.0.1:26785",
     logger: fakeLogger,
   });
 

@@ -42,12 +42,13 @@ test("PeerConstructor", async (assert) => {
       publicKeyPath: "first.peer.pub",
       privateKeyPath: "first.peer.pem",
       ringPublicKeyPath: ".ring.pub",
-      discoveryOptions: {
+      discoveryConfig: {
         range: {
           start: 26780,
           end: 26790
         },
       },
+      publicAddress: "127.0.0.1:26785",
     };
 
   // Missing peer `ringPublicKey`:

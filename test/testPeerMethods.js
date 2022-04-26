@@ -17,6 +17,7 @@ const before = async () => {
 	    httpsServerConfig: {
 	      port: 26780,
 	    },
+	    publicAddress: "127.0.0.1:26780",
 	    logger: fakeLogger
 	});
 
@@ -89,16 +90,14 @@ const testDiscoverAddress = async (assert) => {
 };
 
 const testSignature = async (assert) => {
-	const testPeerSignature = 'aaa';
-	const testPeerConnection = {
-		signature: testPeerSignature.toString('hex'),
-		remoteSignature: testPeerSignature.toString('hex'),
+	const testPeer = {
+		signature: 'aaa',
+		remoteSignature: 'asdasdasd',
 		isConnected: true,
 	};
-	const testPeer = { connection: testPeerConnection };
 	peer.peers_ = [testPeer];
 
-	assert.true(peer.isConnectedTo(testPeerConnection), 
+	assert.true(peer.isConnectedTo({ signature: 'asdasdasd' }), 
 		`Properly reports if peer is connected to another peer.`);
 
 	await assert.doesThrow(async () => {
@@ -107,7 +106,7 @@ const testSignature = async (assert) => {
 		`Attempting to discover on peer to which this peer has already ` + 
 		`connected should throw.`);
 
-	const testPeerSignatureBuffer = Buffer.from(testPeerSignature, 'utf8');
+	const testPeerSignatureBuffer = Buffer.from('aaa', 'utf8');
 	peer.signature_ = testPeerSignatureBuffer;
 	assert.true(peer.isOwnSignature(testPeerSignatureBuffer), 
 		`Properly reports if given signature is equal to this peer.`);
