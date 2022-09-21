@@ -2,9 +2,9 @@
 
 const readline = require('readline');
 
-const colors = require('./colors');
-const ArgumentsParser = require('./ArgumentsParser');
-const { Peer, Message } = require('../index.js');
+const colors = require('../colors');
+const ArgumentsParser = require('../ArgumentsParser');
+const { Peer, Message } = require('../../index.js');
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -61,6 +61,12 @@ const argumentsParser = new ArgumentsParser({
     'range': ArgumentsParser.ARGUMENT_TYPE_ENUM.INT_ARRAY,
     // --publicAddress=address<str> [OPTIONAL] Defaults to undefined.
     'publicAddress': ArgumentsParser.ARGUMENT_TYPE_ENUM.STRING,
+    // --debug [OPTIONAL] Defaults to false.
+    'debug': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    // --v [OPTIONAL] Defaults to false.
+    'v': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
+    // --verbose [OPTIONAL] Defaults to false.
+    'verbose': ArgumentsParser.ARGUMENT_TYPE_ENUM.BOOL,
   });
 const args = argumentsParser.parse();
 
@@ -109,7 +115,14 @@ const readInterface = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
-readInterface.setPrompt('NET> ');
+
+const prompt = (prompt='NET> ') => {
+  return new Promise(resolve => {
+    readInterface.question(prompt, (answer) => {
+      return resolve(answer);
+    });
+  });
+};
 
 const peer = new Peer({
     signaturePath: args.signature,
@@ -148,7 +161,6 @@ const peer = new Peer({
             addressBook[connection.remoteSignature] : 
             connection.peerAddress;
         peerMessage(`[${alias}]: ${message.text}`);
-        readInterface.prompt();
       });
 
     peer.bind(AliasMessage).to((message, connection) => {
@@ -162,7 +174,6 @@ const peer = new Peer({
           `[NET] ${connection.peerAddress} (previously ${previous}, will now be ` +
           `known as ${message.alias}`);
         addressBook[connection.remoteSignature] = message.alias;
-        readInterface.prompt();
       });
 
     peer.bind(GoodbyeMessage).to((message, connection) => {
@@ -173,7 +184,6 @@ const peer = new Peer({
             addressBook[connection.remoteSignature] : 
             connection.peerAddress;
         netLog(`[NET] ${alias} has left the chat.`);
-        readInterface.prompt();
       });
 
     peer.on('connection', (connection) => {
@@ -187,7 +197,6 @@ const peer = new Peer({
           addressBook[connection.remoteSignature] = connection.peerAddress;
           netLog(`[NET] ${connection.peerAddress} has joined the chat.`);
         }
-        readInterface.prompt();
       });
 
     if(args.peers && args.peers.length > 0) {
@@ -198,98 +207,104 @@ const peer = new Peer({
     process.exit(1);
   }
 
-  if(!args.d || args.d.length < 1) {    
-    let isQueueEnabled = false;
-    let queue = [];
+  let isQueueEnabled = false;
+  let queue = [];
 
-    readInterface.on('line', async (line) => {
-      if(line && line.trim().toString().length > 0) {
-        line = line.toString().trim();
+  const parseInput = (line='') => {
+      if(!line || line.trim().toString().length === 0) {
+        return Promise.resolve();
+      }
 
-        process.stdout.moveCursor(0, -1);
-        process.stdout.clearLine();
-        process.stdout.cursorTo(0);
+      line = line.toString().trim();
 
-        if(line.toLowerCase().indexOf('/alias') === 0) {
-          alias = line.split(' ').slice(1).join(' ');
-          await peer.broadcast(new AliasMessage({ alias }));
-          netLog(`[NET] You are now known as "${alias}".`);
-        } else if(line.toLowerCase().indexOf('/discover') === 0) {
-          let addresses = line.split(' ').slice(1).join(' ').split(',');
-          netLog(`[NET] Now discovering on ["${addresses.join('", "')}"].`);
-          try {
-            const results = await peer.discover(addresses);
+      process.stdout.moveCursor(0, -1);
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
+
+      if(line.toLowerCase().indexOf('/alias') === 0) {
+        alias = line.split(' ').slice(1).join(' ');
+        return peer.broadcast(new AliasMessage({ alias }))
+          .then(() => {
+            netLog(`[NET] You are now known as "${alias}".`);
+          });
+      } else if(line.toLowerCase().indexOf('/discover') === 0) {
+        let addresses = line.split(' ').slice(1).join(' ').split(',');
+        netLog(`[NET] Now discovering on ["${addresses.join('", "')}"].`);
+        return peer.discover(addresses)
+          .then(results => {
             netLog(`[NET] Discovery completed on ` + 
               `["${addresses.join('", "')}"]: ${results}`);
-          } catch(e) {
+          })
+          .catch(err => {
             netError(`[NET] Failed to discover on ` + 
               `["${addresses.join('", "')}"].`);
-          }
-        } else {
-          switch(line.toLowerCase()) {
-            case 'exit':
-              try {
-                await peer.broadcast(new GoodbyeMessage());
-              } catch(err) {
+          });
+      } else {
+        switch(line.toLowerCase()) {
+          case 'exit':
+            return peer.broadcast(new GoodbyeMessage())
+              .catch(() => {
                 /* Do nothing. */
-              }
-              await peer.close();
-              readInterface.close();
-              process.exit(0);
-              break;
-            case '/peers':
-              netLog('[NET]', peer.peers);
-              break;
-            case '/queue':
-            case '/queue show':
-              netLog('[NET]', queue);
-              break;
-            case '/queue on':
-              isQueueEnabled = true;
-              netLog(`[NET] Queue is now on.`);
-              break;
-            case '/queue off':
-              isQueueEnabled = false;
-              netLog(`[NET] Queue is now off.`);
-              break;
-            case '/queue send':
-            case '/send':
-              // Send all the queued messages
-              while(queue.length > 0) {
-                try {
-                  const message = queue.splice(0,1)[0];
-                  await peer.broadcast(message);
+              })
+              .then(() => {
+                readInterface.close();
+                return peer.close();
+                process.exit(0);
+              });
+          case '/peers':
+            netLog('[NET]', peer.peers);
+            break;
+          case '/queue':
+          case '/queue show':
+            netLog('[NET]', queue);
+            break;
+          case '/queue on':
+            isQueueEnabled = true;
+            netLog(`[NET] Queue is now on.`);
+            break;
+          case '/queue off':
+            isQueueEnabled = false;
+            netLog(`[NET] Queue is now off.`);
+            break;
+          case '/queue send':
+          case '/send':
+            // Send all the queued messages
+            let promises = [];
+            while(queue.length > 0) {
+              const message = queue.splice(0,1)[0];
+              promises.push(
+                peer.broadcast(message)
+                  .then(() => {
+                    ownMessage(`[${alias ? alias : "You"}]: ${message.text}`);
+                  })
+                  .catch(e => {
+                    netError(`[NET] ${e.message}`);
+                  }));
+            }
+            return Promise.all(promises);
+          case '/self':
+            netLog(JSON.parse(peer.toString()));
+            break;
+          default:
+            const message = new TextMessage({ text: line });
+            if(!isQueueEnabled) {
+              return peer.broadcast(message)
+                .then(() => {
                   ownMessage(`[${alias ? alias : "You"}]: ${message.text}`);
-                } catch(e) {
+                })
+                .catch(e => {
                   netError(`[NET] ${e.message}`);
-                }
-              }
-              break;
-            case '/self':
-              netLog(JSON.parse(peer.toString()));
-              break;
-            default:
-              const message = new TextMessage({ text: line });
-              
-              if(isQueueEnabled) {
-                queue.push(message);
-              } else {
-                try {
-                  await peer.broadcast(message);
-                  ownMessage(`[${alias ? alias : "You"}]: ${message.text}`);
-                } catch(e) {
-                  netError(`[NET] ${e.message}`);
-                }
-              }
-          }
+                });
+            }
+            queue.push(message);
         }
       }
-      
-      readInterface.prompt();
-    });
-  }
+      return Promise.resolve();
+     };
 
-  readInterface.prompt();
+  return prompt()
+    .then(line => parseInput(line))
+    .then(prompt);
 })();
 
 // -----------------------------------------------------------------------------
