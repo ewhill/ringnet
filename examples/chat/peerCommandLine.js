@@ -81,6 +81,8 @@ const discoveryConfig = args.range ? {
     }
   } : {};
 
+const netPrompt = 'NET> ';
+
 const netLog = function() {
   const colorArgs = [
       colors.Dim,
@@ -116,7 +118,7 @@ const readInterface = readline.createInterface({
     output: process.stdout,
   });
 
-const prompt = (prompt='NET> ') => {
+const prompt = (prompt=netPrompt) => {
   return new Promise(resolve => {
     readInterface.question(prompt, (answer) => {
       return resolve(answer);
@@ -161,6 +163,8 @@ const peer = new Peer({
             addressBook[connection.remoteSignature] : 
             connection.peerAddress;
         peerMessage(`[${alias}]: ${message.text}`);
+        process.stdout.cursorTo(0);
+        process.stdout.write(netPrompt)
       });
 
     peer.bind(AliasMessage).to((message, connection) => {
@@ -174,6 +178,8 @@ const peer = new Peer({
           `[NET] ${connection.peerAddress} (previously ${previous}, will now be ` +
           `known as ${message.alias}`);
         addressBook[connection.remoteSignature] = message.alias;
+        process.stdout.cursorTo(0);
+        process.stdout.write(netPrompt)
       });
 
     peer.bind(GoodbyeMessage).to((message, connection) => {
@@ -184,6 +190,8 @@ const peer = new Peer({
             addressBook[connection.remoteSignature] : 
             connection.peerAddress;
         netLog(`[NET] ${alias} has left the chat.`);
+        process.stdout.cursorTo(0);
+        process.stdout.write(netPrompt)
       });
 
     peer.on('connection', (connection) => {
@@ -197,6 +205,8 @@ const peer = new Peer({
           addressBook[connection.remoteSignature] = connection.peerAddress;
           netLog(`[NET] ${connection.peerAddress} has joined the chat.`);
         }
+        process.stdout.cursorTo(0);
+        process.stdout.write(netPrompt)
       });
 
     if(args.peers && args.peers.length > 0) {
@@ -241,7 +251,7 @@ const peer = new Peer({
           });
       } else {
         switch(line.toLowerCase()) {
-          case 'exit':
+          case '/exit':
             return peer.broadcast(new GoodbyeMessage())
               .catch(() => {
                 /* Do nothing. */
@@ -302,9 +312,11 @@ const peer = new Peer({
       return Promise.resolve();
      };
 
-  return prompt()
-    .then(line => parseInput(line))
-    .then(prompt);
+  return (async function loop() {
+    return prompt()
+      .then(line => parseInput(line))
+      .then(() => loop());
+  }());
 })();
 
 // -----------------------------------------------------------------------------
