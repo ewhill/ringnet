@@ -3,7 +3,7 @@
  * 
  * @param  {Object}    context   A context providing variables needed by this 
  *                               handler to execute.
- * @param  {...Any}    args      Arguments that are passed to this handler.
+ * @param  {Any[]}     args      Arguments that are passed to this handler.
  * @return {Promise}             A promise which resolves or rejects indicating
  *                               whether the program should continue executing.
  */

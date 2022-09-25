@@ -4,6 +4,8 @@
  * ChatPeer class - A ringnet peer extended for chat functionality.
  */
 
+const URL = require("url").URL;
+
 const { Peer } = require('ringnet');
 const {
     AliasMessage,
@@ -58,12 +60,11 @@ class ChatPeer extends Peer {
   }
 
   _connectionHandler(connection) {
-    if(this._hasAlias(connection)) {
-      const alias = this._getAlias(connection.remoteSignature);
+    if(this.hasAlias(connection)) {
+      const alias = this.getAlias(connection.remoteSignature);
       this._io.net.log(`${alias} has rejoined the chat.`);
     } else {
       this._io.net.log(`${connection.peerAddress} has joined the chat.`);
-      this._addAlias(connection.remoteSignature, connection.peerAddress);
     }
   }
 
@@ -71,12 +72,12 @@ class ChatPeer extends Peer {
     this._aliases[signature] = alias;
   }
 
-  _hasAlias(signature) {
+  hasAlias(signature) {
     return this._aliases.hasOwnProperty(signature);
   }
 
-  _getAlias(signature) {
-    return this._hasAlias(signature) ? this._aliases[signature] : null;
+  getAlias(signature) {
+    return this.hasAlias(signature) ? this._aliases[signature] : null;
   }
 
   enableDebugMode(logger=console) {
@@ -109,13 +110,13 @@ class ChatPeer extends Peer {
 
   async _textMessageHandler(message, connection) {
     const alias = 
-      this._getAlias(connection.remoteSignature) || connection.peerAddress;
-    this._io.message.peer(`[${alias}]: ${message.text}`);
+      this.getAlias(connection.remoteSignature) || connection.peerAddress;
+    this._io.message.peer(alias, message.text);
   }
 
   async _aliasMessageHandler(message, connection) {
     const alias = 
-      this._getAlias(connection.remoteSignature) || connection.peerAddress;
+      this.getAlias(connection.remoteSignature) || connection.peerAddress;
     this._io.net.log(
       `${connection.peerAddress} (previously ${alias}), will now be known ` +
       `as ${message.alias}`);
@@ -124,7 +125,7 @@ class ChatPeer extends Peer {
 
   async _goodbyeMessageHandler(message, connection) {
     const alias = 
-      this._getAlias(connection.remoteSignature) || connection.peerAddress;
+      this.getAlias(connection.remoteSignature) || connection.peerAddress;
     this._io.net.log(`${alias} has left the chat.`);
   }
 
@@ -151,9 +152,8 @@ class ChatPeer extends Peer {
 
     try {
       await this.broadcast(message);
-      const alias = this._getAlias(this.signature);
       this._io.message.own(
-        `[${!!alias ? alias + ' (you)': 'You'}]: ${message.text}`);
+        this.getAlias(this.signature) || 'You', message.text);
     } catch(e) {
       this._io.net.error(e.message);
     }

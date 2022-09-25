@@ -10,7 +10,16 @@
  */
 async function peersCommandHandler(context, ...args) {
       const { peer, io } = context;
-      io.net.log(peer.peers);
+      const peers = peer.trustedPeers.map(p => {
+                  let whoIs = p.peerAddress;
+                  if(peer.hasAlias(p.remoteSignature)) {
+                        whoIs = 
+                              `${peer.getAlias(p.remoteSignature)} (${whoIs})`;
+                  }
+                  return `${whoIs} -- ` +
+                        `online since ${p.created.toLocaleString()}`;
+            });
+      io.net.log(`Connected peers:\n\t${peers.join('\n\t')}`);
       return Promise.resolve(true);
 }
 
