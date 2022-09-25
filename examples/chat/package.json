@@ -2,12 +2,14 @@
   "name": "peerchat",
   "version": "0.0.1",
   "description": "",
-  "main": "peerCommandLine.js",
+  "main": "index.js",
   "scripts": {
-    "chat": "node peerCommandLine.js",
+    "chat": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Eric Hill",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "ringnet": "github:ewhill/ringnet#develop"
+  }
 }
