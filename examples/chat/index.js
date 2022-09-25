@@ -5,6 +5,16 @@ const ArgumentsParser = require('../ArgumentsParser');
 const { ChatPeer } = require('./ChatPeer');
 const { ConsoleIO } = require('./ConsoleIO');
 
+const {
+    aliasCommandHandler,
+    debugCommandHandler,
+    discoverCommandHandler,
+    exitCommandHandler,
+    peersCommandHandler,
+    queueCommandHandler,
+    selfCommandHandler
+  } = require('./commands/index');
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -63,86 +73,27 @@ const peer = new ChatPeer({
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
+const COMMANDS = {
+  'alias': aliasCommandHandler,
+  'debug': debugCommandHandler,
+  'discover': discoverCommandHandler,
+  'exit': exitCommandHandler,
+  'peers': peersCommandHandler,
+  'queue': queueCommandHandler,
+  'self': selfCommandHandler,
+};
+
 function isCommandImplemented(command) {
-  return command === 'exit' || 
-    command === 'exit' || 
-    command === 'discover' || 
-    command === 'peers' || 
-    command === 'alias' || 
-    command === 'debug' || 
-    command === 'queue' ||
-    command === 'handlers' ||
-    command === 'self';
+  return COMMANDS.hasOwnProperty(command) && 
+    typeof COMMANDS[command] === 'function';
 }
 
 async function executeCommand(command, args) {
-  switch(command) {
-    case 'exit':
-      await peer.close();
-      return Promise.resolve(false);
-    case 'discover':
-      const addresses = args.join(' ').split(',').map(a => a.trim());
-      io.net.log(`[NET] Now discovering on ["${addresses.join('", "')}"].`);
-      try {
-        const results = await peer.discover(addresses);
-        io.net.log(
-          `[NET] Discovery completed on ["${addresses.join('", "')}"]: ` +
-          `${results}`);
-      } catch(err) {
-        io.net.error(`[NET] Failed to discover on ` + 
-          `["${addresses.join('", "')}"].`);
-      }
-      break;
-    case 'peers':
-      io.net.log('[NET]', peer.peers);
-      break;
-    case 'alias':
-      const alias = args.join(' ');
-      await peer.setOwnAlias(alias);
-      break;
-    case 'debug':
-      if (args.length > 0) {
-        if(args[0] === 'enable') {
-          peer.enableDebugMode();
-          io.net.log(`[NET] debug mode enabled.`);
-          break;
-        } else if(args[0] === 'disable') {
-          peer.disableDebugMode();
-          io.net.log(`[NET] debug mode disabled.`);
-          break;
-        }
-      }
-      io.net.log(`[NET] debug mode is ` +
-        `${peer.isDebugModeEnabled ? 'enabled' : 'disabled'}`);
-      break;
-    case 'queue':
-      if (args.length > 0) {
-        if(args[0] === 'enable') {
-          peer.enableMessageQueue();
-          io.net.log(`[NET] message queue enabled.`);
-          break;
-        } else if(args[0] === 'disable') {
-          peer.disableMessageQueue();
-          io.net.log(`[NET] message queue disabled.`);
-          break;
-        } else if(args[0] === 'send') {
-          await peer.sendQueue();
-          break;
-        }
-      }
-      io.net.log(`[NET] queue mode is ` +
-        `${peer.isQueueEnabled ? 'enabled' : 'disabled'}`);
-      break;
-    case 'self':
-      io.net.log('[NET]', JSON.parse(peer.toString()));
-      break;
-    case 'handlers':
-      io.net.log('[NET]', peer.requestHandlers_);
-      break;
-    default:
-      throw Error(`Command '${command}' is not implemented!`);
+  if(!isCommandImplemented(command)) {
+    throw new Error(`Command ${command} is not implemented!`);
   }
-  return Promise.resolve(true);
+  const context = { peer, io };
+  return COMMANDS[command](context, ...args);
 }
 
 async function parseInput (line='') {
@@ -160,13 +111,13 @@ async function parseInput (line='') {
 
   if(isCommand) {
     const command = parts[0].slice(1);
-    if(isCommandImplemented(command)) {
-      const args = parts.slice(1);
-      try {
-        return executeCommand(command, args);
-      } catch(err) {
-        io.net.error(err.message);
-      }
+    const args = parts.slice(1);
+    try {
+      const result = await executeCommand(command, args);
+      return Promise.resolve(result);
+    } catch(err) {
+      io.net.error(err.message);
+      return Promise.resolve(true);
     }
   }
   

@@ -60,10 +60,9 @@ class ChatPeer extends Peer {
   _connectionHandler(connection) {
     if(this._hasAlias(connection)) {
       const alias = this._getAlias(connection.remoteSignature);
-      this._io.net.log(`[NET] ${alias} has rejoined the chat.`);
+      this._io.net.log(`${alias} has rejoined the chat.`);
     } else {
-      this._io.net.log(
-        `[NET] ${connection.peerAddress} has joined the chat.`);
+      this._io.net.log(`${connection.peerAddress} has joined the chat.`);
       this._addAlias(connection.remoteSignature, connection.peerAddress);
     }
   }
@@ -118,15 +117,15 @@ class ChatPeer extends Peer {
     const alias = 
       this._getAlias(connection.remoteSignature) || connection.peerAddress;
     this._io.net.log(
-      `[NET] ${connection.peerAddress} (previously ${alias}), will now be ` +
-      `known as ${message.alias}`);
+      `${connection.peerAddress} (previously ${alias}), will now be known ` +
+      `as ${message.alias}`);
     this._addAlias(connection.remoteSignature, message.alias);
   }
 
   async _goodbyeMessageHandler(message, connection) {
     const alias = 
       this._getAlias(connection.remoteSignature) || connection.peerAddress;
-    this._io.net.log(`[NET] ${alias} has left the chat.`);
+    this._io.net.log(`${alias} has left the chat.`);
   }
 
   async setOwnAlias(alias) {
@@ -136,9 +135,9 @@ class ChatPeer extends Peer {
     try {
       await this.broadcast(new AliasMessage({ alias }));
       this._addAlias(this.signature, alias);
-      this._io.net.log(`[NET] You are now known as "${alias}".`);
+      this._io.net.log(`You are now known as "${alias}".`);
     } catch(e) {
-        this._io.net.error(`[NET] ${e.message}`);
+        this._io.net.error(e.message);
     }
   }
 
@@ -152,10 +151,11 @@ class ChatPeer extends Peer {
 
     try {
       await this.broadcast(message);
-      const alias = this._getAlias(this.signature) || 'You';
-      this._io.message.own(`[${alias}]: ${message.text}`);
+      const alias = this._getAlias(this.signature);
+      this._io.message.own(
+        `[${!!alias ? alias + ' (you)': 'You'}]: ${message.text}`);
     } catch(e) {
-      this._io.net.error(`[NET] ${e.message}`);
+      this._io.net.error(e.message);
     }
   }
 
@@ -163,7 +163,7 @@ class ChatPeer extends Peer {
    * Sends all the queued messages
    * 
    * @return {Promise} An array of promises, one for each message sent from the 
-   *                      queue.
+   *                   queue.
    */
   async sendQueue() {
     if(!this._isMessageQueueEnabled) {
