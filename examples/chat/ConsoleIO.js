@@ -195,7 +195,9 @@ class ConsoleIO {
     for(let x=start; x<process.stdout.columns; x++) {
       process.stdout.write(' ');
     }
-    process.stdout.cursorTo(start, process.stdout.rows);
+    process.stdout.cursorTo(
+      this.sidebarSize + this._readInterface.getCursorPos().cols,
+      process.stdout.rows);
   }
 
   write(...args) {
