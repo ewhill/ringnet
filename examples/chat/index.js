@@ -12,7 +12,8 @@ const {
     exitCommandHandler,
     peersCommandHandler,
     queueCommandHandler,
-    selfCommandHandler
+    selfCommandHandler,
+    sidebarCommandHandler,
   } = require('./commands/index');
 
 // -----------------------------------------------------------------------------
@@ -81,6 +82,7 @@ const COMMANDS = {
   'peers': peersCommandHandler,
   'queue': queueCommandHandler,
   'self': selfCommandHandler,
+  'sidebar': sidebarCommandHandler,
 };
 
 function isCommandImplemented(command) {
@@ -96,14 +98,13 @@ async function executeCommand(command, args) {
   return COMMANDS[command](context, ...args);
 }
 
-async function parseInput (line='') {
-  if(!line || line.trim().toString().length === 0) {
-    return Promise.resolve(true);
-  }
-
+async function parseInput(line='') {
   process.stdout.moveCursor(0, -1);
   process.stdout.clearLine();
-  process.stdout.cursorTo(0);
+
+  if(!line || line.trim().length === 0) {
+    return Promise.resolve(true);
+  }
 
   line = line.toString().trim();
   const parts = line.toLowerCase().split(' ').filter(p => !!p);
@@ -135,7 +136,7 @@ async function setup() {
   await peer.init();
 
   console.clear();
-  console.log(args);
+  io.net.log(args);
 
   if(!args.peers || args.peers.length < 1) {
     return Promise.resolve();
@@ -152,10 +153,22 @@ async function loop() {
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
+setInterval(() => {
+  const peers = 
+    peer.trustedPeers.map(
+      p => (
+        peer.hasAlias(p.remoteSignature) ? 
+          peer.getAlias(p.remoteSignature) : 
+          p.peerAddress));
+  io.render('Active Peers:\n' + peers.join('\n'));
+}, 250);
+
 setup()
-  .then(() => loop())
+  .then(() => {
+    return loop();
+  })
   .catch(err => {
-    console.error(e.stack);
+    console.error(err.stack);
   })
   .then(() => {
     peer.close();

@@ -64,7 +64,10 @@ class ConsoleIO {
     },
   };
 
+  _isSidebarEnabled = true;
   _prompt;
+  _sidebarSize = 32;
+  _stdOutBuffer = [];
 
   constructor(prompt='> ') {
     this._readInterface = readline.createInterface({
@@ -74,49 +77,22 @@ class ConsoleIO {
     this._prompt = prompt;
   }
 
-  write(colorArgs, ...args) {
-    process.stdout.clearLine();
-    process.stdout.cursorTo(0);
-    process.stdout.write(colorArgs.join(''));
-    for(let arg of args) {
-      if(typeof arg === 'string') {
-        const formattedMessage = arg.split(/(\s+)/)
-          .map(part => {
-            try {
-              if((new URL(part)).host) {
-                return `${CONSOLE_COLORS.Underline}${part}` +
-                  `${CONSOLE_COLORS.Reset}${colorArgs.join('')}`;
-              }
-            } catch (err) { /* Fall through... */ }
-            return part;
-          })
-          .join('');
-        process.stdout.write(formattedMessage);
-      } else {
-        process.stdout.write(util.format(arg));
-      }
-      if(args.length > 0) {
-        process.stdout.write(' ');
-      }
-    }
-    process.stdout.write('\n');
-    process.stdout.write(CONSOLE_COLORS.Reset);
-    process.stdout.cursorTo(0);
-    process.stdout.write(this._prompt);
+  static formatHyperlinks(text) {
+    return text.split(/(\s+)/g)
+      .map(part => {
+        try {
+          if((new URL(part)).host) {
+            return `${CONSOLE_COLORS.Underline}${part}` +
+              `${CONSOLE_COLORS.Reset}${colorArgs.join('')}`;
+          }
+        } catch (err) { /* Fall through... */ }
+        return part;
+      })
+      .join('');
   }
 
-  clear() {
-    console.clear();
-  }
-
-  prompt = (prompt=this._prompt) => {
-    return new Promise(resolve => 
-      this._readInterface.question(prompt, resolve));
-  }
-
-  close() {
-    this._readInterface.close();
-    this._readInterface.removeAllListeners();
+  get sidebarSize() {
+    return this._isSidebarEnabled ? this._sidebarSize : 0;
   }
 
   get net() {
@@ -125,8 +101,8 @@ class ConsoleIO {
         if (!ConsoleIO.Colors.net.hasOwnProperty(key)) {
           throw new Error(`ConsoleIO.net has no method named '${key}'!`);
         }
-        return (...args) => {
-          this.write.apply(this, [ConsoleIO.Colors.net[key], '[NET]', ...args]); 
+        return (message) => {
+          this.write(`${ConsoleIO.Colors.net[key].join('')}[NET]:`, message);
         };
       }
     });
@@ -138,16 +114,117 @@ class ConsoleIO {
         if (!ConsoleIO.Colors.message.hasOwnProperty(key)) {
           throw new Error(`ConsoleIO.message has no method named '${key}'!`);
         }
-        return (from, text, isOwnMessage=false) => {
-          const formatted = 
+        return (from, text) => {
+          this.write(
             `${ConsoleIO.Colors.message[key].join('')}` + 
-            `[${from}]:` +
-            `${CONSOLE_COLORS.Reset}${CONSOLE_COLORS.Foreground.White} ${text}`;
-          this.write.apply(
-            this, [[ CONSOLE_COLORS.Foreground.White ], formatted]);
+            `[${from}]: ` +
+            `${CONSOLE_COLORS.Reset}${CONSOLE_COLORS.Foreground.White}` +
+            `${text}`);
         };
       }
     });
+  }
+
+  get isSidebarEnabled() {
+    return this._isSidebarEnabled;
+  }
+
+  enableSidebar() {
+    this._isSidebarEnabled = true;
+  }
+
+  disableSidebar() {
+    this._isSidebarEnabled = false;
+  }
+
+  render(sidebarText) {
+    this.renderChat();
+    this.renderSidebar(sidebarText);
+    this.renderPrompt();
+  }
+
+  renderSidebar(text) {
+    if(!this._isSidebarEnabled) {
+      return;
+    }
+
+    process.stdout.write(CONSOLE_COLORS.Background.White);
+    process.stdout.write(CONSOLE_COLORS.Foreground.Black);
+
+    for (let i=0; i<process.stdout.rows; i++) {
+      process.stdout.cursorTo(0, i);
+      process.stdout.write((new Array(this.sidebarSize + 1)).join(' '));
+    }
+
+    process.stdout.cursorTo(0, 0);
+
+    text.split('\n').forEach(line => {
+      process.stdout.write(' ' + line + '\n');
+    });
+  }
+
+  renderChat() {
+    const cols = process.stdout.columns - this.sidebarSize;
+    const rows = process.stdout.rows - 1;
+
+    for(let y=0; y<rows; y++) {
+      process.stdout.cursorTo(this.sidebarSize, y);
+      process.stdout.write(CONSOLE_COLORS.Reset);
+      for(let x=0; x<cols; x++) {
+        process.stdout.write(' ');
+      }
+    }
+
+    let output = this._stdOutBuffer.slice(-rows);
+    const start = output.length > rows ? output.length - rows : 0;
+    const size = output.length - start;
+    for(let j=start; j<output.length; j++) {
+        process.stdout.cursorTo(this.sidebarSize, rows - size + j);
+        process.stdout.write(output[j]);
+    }
+    process.stdout.write(CONSOLE_COLORS.Reset);
+  }
+
+  renderPrompt() {
+    process.stdout.cursorTo(this.sidebarSize, process.stdout.rows);
+    process.stdout.write(CONSOLE_COLORS.Reset);
+    process.stdout.write(this._prompt);
+    process.stdout.write(this._readInterface.line);
+    const start = 
+      this.sidebarSize + this._prompt.length + this._readInterface.line.length;
+    for(let x=start; x<process.stdout.columns; x++) {
+      process.stdout.write(' ');
+    }
+    process.stdout.cursorTo(start, process.stdout.rows);
+  }
+
+  write(...args) {
+    let output = ''
+    for(let arg of args) {
+      output += 
+        ConsoleIO.formatHyperlinks(typeof arg === 'string' ? 
+          arg : util.format(arg));
+      if(args.length > 1) {
+        output += ' '
+      }
+    }
+    output += CONSOLE_COLORS.Reset
+    this._stdOutBuffer = this._stdOutBuffer.concat(output.split('\n'));
+  }
+
+  clear() {
+    console.clear();
+  }
+
+  prompt(prompt=this._prompt) {
+    return new Promise(resolve => {
+      return this._readInterface.question(prompt, resolve);
+    });
+  }
+
+  close() {
+    this._readInterface.close();
+    this._readInterface.removeAllListeners();
   }
 }
 

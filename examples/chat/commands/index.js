@@ -6,6 +6,7 @@ const { exitCommandHandler } = require('./exit');
 const { peersCommandHandler } = require('./peers');
 const { queueCommandHandler } = require('./queue');
 const { selfCommandHandler } = require('./self');
+const { sidebarCommandHandler } = require('./sidebar');
 
 module.exports = {
 	aliasCommandHandler,
@@ -15,4 +16,5 @@ module.exports = {
 	peersCommandHandler,
 	queueCommandHandler,
 	selfCommandHandler,
+	sidebarCommandHandler,
 };
