@@ -12,7 +12,12 @@ async function debugCommandHandler(context, ...args) {
       if (args.length > 0) {
         switch(args[0]) {
           case 'enable':
-            peer.enableDebugMode();
+            peer.enableDebugMode({
+                        error: io.net.error,
+                        info: io.net.info,
+                        log: io.net.log,
+                        warn: io.net.warn,
+                  });
             io.net.log(`Debug mode enabled.`);
             break;
           case 'disable':

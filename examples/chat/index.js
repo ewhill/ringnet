@@ -160,7 +160,7 @@ setInterval(() => {
         peer.hasAlias(p.remoteSignature) ? 
           peer.getAlias(p.remoteSignature) : 
           p.peerAddress));
-  io.render('Active Peers:\n' + peers.join('\n'));
+  io.render('Active Peers:\n - ' + peers.join('\n - '));
 }, 250);
 
 setup()

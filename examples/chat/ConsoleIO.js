@@ -43,13 +43,22 @@ const CONSOLE_COLORS = {
 class ConsoleIO {
   static Colors = {
     net: {
+      error: [
+        CONSOLE_COLORS.Background.White,
+        CONSOLE_COLORS.Foreground.Red,
+      ],
+      info: [
+        CONSOLE_COLORS.Dim,
+        CONSOLE_COLORS.Foreground.Blue,
+      ],
       log: [
         CONSOLE_COLORS.Dim,
         CONSOLE_COLORS.Foreground.White,
       ],
-      error: [
-        CONSOLE_COLORS.Background.White,
-        CONSOLE_COLORS.Foreground.Red,
+      warn: [
+        CONSOLE_COLORS.Dim,
+        CONSOLE_COLORS.Background.Black,
+        CONSOLE_COLORS.Foreground.Yellow,
       ],
     },
     message: {
@@ -75,20 +84,6 @@ class ConsoleIO {
       output: process.stdout,
     });
     this._prompt = prompt;
-  }
-
-  static formatHyperlinks(text) {
-    return text.split(/(\s+)/g)
-      .map(part => {
-        try {
-          if((new URL(part)).host) {
-            return `${CONSOLE_COLORS.Underline}${part}` +
-              `${CONSOLE_COLORS.Reset}${colorArgs.join('')}`;
-          }
-        } catch (err) { /* Fall through... */ }
-        return part;
-      })
-      .join('');
   }
 
   get sidebarSize() {
@@ -203,9 +198,7 @@ class ConsoleIO {
   write(...args) {
     let output = ''
     for(let arg of args) {
-      output += 
-        ConsoleIO.formatHyperlinks(typeof arg === 'string' ? 
-          arg : util.format(arg));
+      output += typeof arg === 'string' ? arg : util.format(arg);
       if(args.length > 1) {
         output += ' '
       }

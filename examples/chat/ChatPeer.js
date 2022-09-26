@@ -94,7 +94,7 @@ class ChatPeer extends Peer {
     return this._isDebugModeEnabled;
   }
 
-  enableMessageQueue(logger=console) {
+  enableMessageQueue() {
     this._isMessageQueueEnabled = true;
     this._messageQueue = [];
   }
