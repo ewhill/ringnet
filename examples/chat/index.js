@@ -144,31 +144,26 @@ async function setup() {
   return peer.discover(args.peers);
 }
 
-async function loop() {
-  const line = await io.prompt();
-  const shouldLoop = await parseInput(line);
-  return shouldLoop ? loop() : Promise.resolve();
+async function inputLoop() {
+  for await (const line of io.readInterface) {
+    let shouldContinue = true;
+    try {
+      shouldContinue = await parseInput(line);
+    } catch(err) {
+      io.net.error(err.stack);
+    }
+    if(!shouldContinue) {
+      break;
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-setInterval(() => {
-  const peers = 
-    peer.trustedPeers.map(
-      p => (
-        peer.hasAlias(p.remoteSignature) ? 
-          peer.getAlias(p.remoteSignature) : 
-          p.peerAddress));
-  io.render('Active Peers:\n - ' + peers.join('\n - '));
-}, 250);
-
 setup()
   .then(() => {
-    return loop();
-  })
-  .catch(err => {
-    console.error(err.stack);
+    return inputLoop();
   })
   .then(() => {
     peer.close();

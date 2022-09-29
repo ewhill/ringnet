@@ -59,7 +59,16 @@ class ChatPeer extends Peer {
       });
   }
 
+  get activePeers() {
+    return this.trustedPeers.map(
+      p => (
+        this.hasAlias(p.remoteSignature) ? 
+          this.getAlias(p.remoteSignature) : 
+          p.peerAddress));
+  }
+
   _connectionHandler(connection) {
+    this._io.updateActivePeers(this.activePeers);
     if(this.hasAlias(connection)) {
       const alias = this.getAlias(connection.remoteSignature);
       this._io.net.log(`${alias} has rejoined the chat.`);
@@ -117,13 +126,15 @@ class ChatPeer extends Peer {
   async _aliasMessageHandler(message, connection) {
     const alias = 
       this.getAlias(connection.remoteSignature) || connection.peerAddress;
+    this._addAlias(connection.remoteSignature, message.alias);
+    this._io.updateActivePeers(this.activePeers);
     this._io.net.log(
       `${connection.peerAddress} (previously ${alias}), will now be known ` +
       `as ${message.alias}`);
-    this._addAlias(connection.remoteSignature, message.alias);
   }
 
   async _goodbyeMessageHandler(message, connection) {
+    this._io.updateActivePeers(this.activePeers);
     const alias = 
       this.getAlias(connection.remoteSignature) || connection.peerAddress;
     this._io.net.log(`${alias} has left the chat.`);
@@ -133,9 +144,10 @@ class ChatPeer extends Peer {
     if(typeof alias !== 'string' || alias.length < 1) {
       return;
     }
+    this._addAlias(this.signature, alias);
+    this._io.updateActivePeers(this.activePeers);
     try {
       await this.broadcast(new AliasMessage({ alias }));
-      this._addAlias(this.signature, alias);
       this._io.net.log(`You are now known as "${alias}".`);
     } catch(e) {
         this._io.net.error(e.message);
@@ -172,7 +184,7 @@ class ChatPeer extends Peer {
 
     let promises = [];
     while(this._messageQueue.length > 0) {
-      promises.push(peer.sendTextMessage(this._messageQueue.splice(0,1)[0]));
+      promises.push(this.sendTextMessage(this._messageQueue.splice(0,1)[0]));
     }
     return Promise.all(promises);
   }

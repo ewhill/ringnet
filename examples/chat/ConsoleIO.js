@@ -73,51 +73,73 @@ class ConsoleIO {
     },
   };
 
+  _activePeers = [];
   _isSidebarEnabled = true;
   _prompt;
   _sidebarSize = 32;
   _stdOutBuffer = [];
 
-  constructor(prompt='> ') {
+  constructor(prompt='> ', sidebarEnabled=true) {
     this._readInterface = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
+
     this._prompt = prompt;
+
+    if(sidebarEnabled) {
+      this.enableSidebar();
+    } else {
+      this.disableSidebar();
+    }
+
+    process.stdout.on('resize', () => {
+        this.render();
+      });
+  }
+
+  get readInterface() {
+    return this._readInterface;
   }
 
   get sidebarSize() {
     return this._isSidebarEnabled ? this._sidebarSize : 0;
   }
 
-  get net() {
-    return new Proxy({}, {
-      get: (_, key) => {
-        if (!ConsoleIO.Colors.net.hasOwnProperty(key)) {
-          throw new Error(`ConsoleIO.net has no method named '${key}'!`);
-        }
-        return (message) => {
-          this.write(`${ConsoleIO.Colors.net[key].join('')}[NET]:`, message);
-        };
-      }
-    });
-  }
+  net = {
+    _write: (netColors, message) => {
+      const format = 
+        `${CONSOLE_COLORS.Reset}${netColors}`;
+      let output = `${format}[NET]: ` + 
+        (typeof message === 'string' ? 
+          message : util.inspect(message, {depth: null, colors: true }));
+      output
+        .split('\n')
+        .map(line => `${format}${line}`)
+        .forEach(line => this.write.apply(this, [line]));
+    },
+    error: (message) =>
+      this.net._write(ConsoleIO.Colors.net.error.join(''), message),
+    info: (message) =>
+      this.net._write(ConsoleIO.Colors.net.info.join(''), message),
+    log: (message) =>
+      this.net._write(ConsoleIO.Colors.net.log.join(''), message),
+    warn: (message) =>
+      this.net._write(ConsoleIO.Colors.net.warn.join(''), message),
+  };
 
-  get message() {
-    return new Proxy({}, {
-      get: (_, key) => {
-        if (!ConsoleIO.Colors.message.hasOwnProperty(key)) {
-          throw new Error(`ConsoleIO.message has no method named '${key}'!`);
-        }
-        return (from, text) => {
-          this.write(
-            `${ConsoleIO.Colors.message[key].join('')}` + 
-            `[${from}]: ` +
-            `${CONSOLE_COLORS.Reset}${CONSOLE_COLORS.Foreground.White}` +
-            `${text}`);
-        };
-      }
-    });
+  message = {
+    _write: (messageColors, from, text) => {
+      this.write(
+        `${messageColors}` + 
+        `[${from}]: ` +
+        `${CONSOLE_COLORS.Reset}${CONSOLE_COLORS.Foreground.White}` +
+        `${text}`);
+    },
+    peer: (from, text) =>
+      this.message._write(ConsoleIO.Colors.message.peer.join(''), from, text),
+    own: (from, text) =>
+      this.message._write(ConsoleIO.Colors.message.own.join(''), from, text),
   }
 
   get isSidebarEnabled() {
@@ -126,95 +148,117 @@ class ConsoleIO {
 
   enableSidebar() {
     this._isSidebarEnabled = true;
+    this._readInterface.setPrompt(
+      CONSOLE_COLORS.Background.White + CONSOLE_COLORS.Foreground.Black +
+      (new Array(this.sidebarSize + 1).join(' ')) + CONSOLE_COLORS.Reset + 
+      this._prompt);
   }
 
   disableSidebar() {
     this._isSidebarEnabled = false;
+    this._readInterface.setPrompt(this._prompt);
   }
 
-  render(sidebarText) {
-    this.renderChat();
-    this.renderSidebar(sidebarText);
-    this.renderPrompt();
+  updateActivePeers(activePeers) {
+    this._activePeers = activePeers;
   }
 
-  renderSidebar(text) {
+  _sizeOutput(output, size, padFormat=[CONSOLE_COLORS.Reset]) {
+    const pieces = output.split(/(\x1b\[[0-9]+m)/ig);
+
+    let count = 0;
+    let builder = '';
+
+    for (let piece of pieces) {
+      builder += piece;
+
+      if(/\x1b\[[0-9]+m/ig.test(piece)) {
+        continue; 
+      }
+
+      count += piece.length;
+      if(count > size) {
+        return builder + piece.substr(0, size - builder.length);
+      } else if (count === size) {
+        return builder + piece;
+      }
+    }
+
+    return (builder + 
+      padFormat.join('') + 
+      (new Array(size - count + 1)).join(' '));
+  }
+
+  render() {
+    for(let y=0; y<=process.stdout.rows; y++) {
+      process.stdout.cursorTo(0, y);
+      this.renderSidebar(y);
+      if (y < process.stdout.rows) {
+        this.renderChat(y);
+      } else {
+        this.renderPrompt();
+      }
+    }
+  }
+
+  renderSidebar(row) {
     if(!this._isSidebarEnabled) {
       return;
     }
 
-    process.stdout.write(CONSOLE_COLORS.Background.White);
-    process.stdout.write(CONSOLE_COLORS.Foreground.Black);
-
-    for (let i=0; i<process.stdout.rows; i++) {
-      process.stdout.cursorTo(0, i);
-      process.stdout.write((new Array(this.sidebarSize + 1)).join(' '));
+    let line = 
+      CONSOLE_COLORS.Background.White + CONSOLE_COLORS.Foreground.Black;
+    if (row === 0) {
+      if(this._activePeers.length > 0) {
+        line += ' Active peers:';
+      } else {
+        line += ' No active peers.';
+      }
+    } else if((row-1) > -1 && (row-1) < this._activePeers.length) {
+      line += 
+        ` ${CONSOLE_COLORS.Foreground.Green}●`+
+        `${CONSOLE_COLORS.Foreground.Black} ${this._activePeers[row - 1]}`;
     }
 
-    process.stdout.cursorTo(0, 0);
-
-    text.split('\n').forEach(line => {
-      process.stdout.write(' ' + line + '\n');
-    });
+    process.stdout.write(this._sizeOutput(line, this._sidebarSize, []));
   }
 
-  renderChat() {
-    const cols = process.stdout.columns - this.sidebarSize;
-    const rows = process.stdout.rows - 1;
-
-    for(let y=0; y<rows; y++) {
-      process.stdout.cursorTo(this.sidebarSize, y);
-      process.stdout.write(CONSOLE_COLORS.Reset);
-      for(let x=0; x<cols; x++) {
-        process.stdout.write(' ');
-      }
+  renderChat(row) {
+    let line = CONSOLE_COLORS.Reset;
+    const bufferIndex = 
+      this._stdOutBuffer.length - process.stdout.rows + row + 1;
+    if(bufferIndex > -1 && bufferIndex < this._stdOutBuffer.length) {
+      line += this._stdOutBuffer[bufferIndex];
     }
 
-    let output = this._stdOutBuffer.slice(-rows);
-    const start = output.length > rows ? output.length - rows : 0;
-    const size = output.length - start;
-    for(let j=start; j<output.length; j++) {
-        process.stdout.cursorTo(this.sidebarSize, rows - size + j);
-        process.stdout.write(output[j]);
-    }
-    process.stdout.write(CONSOLE_COLORS.Reset);
+    process.stdout.write(this._sizeOutput(line, process.stdout.columns - this.sidebarSize));
   }
 
   renderPrompt() {
-    process.stdout.cursorTo(this.sidebarSize, process.stdout.rows);
-    process.stdout.write(CONSOLE_COLORS.Reset);
-    process.stdout.write(this._prompt);
-    process.stdout.write(this._readInterface.line);
-    const start = 
-      this.sidebarSize + this._prompt.length + this._readInterface.line.length;
-    for(let x=start; x<process.stdout.columns; x++) {
-      process.stdout.write(' ');
-    }
+    const line = CONSOLE_COLORS.Reset + this._prompt + this._readInterface.line;
+    process.stdout.write(
+      this._sizeOutput(line, process.stdout.columns - this.sidebarSize));
     process.stdout.cursorTo(
-      this.sidebarSize + this._readInterface.getCursorPos().cols,
+      this.sidebarSize + this._prompt.length /*+ this._readInterface.cursor*/,
       process.stdout.rows);
   }
 
   write(...args) {
-    let output = ''
-    for(let arg of args) {
-      output += typeof arg === 'string' ? arg : util.format(arg);
-      if(args.length > 1) {
-        output += ' '
-      }
-    }
-    output += CONSOLE_COLORS.Reset
+    const output = 
+      args
+        .reduce((prev, curr, index) => {
+          return prev + 
+            (index > 0 ? ' ' : '') + 
+            (typeof curr === 'string' ? 
+              curr : util.inspect(curr, { depth: null, colors: true }));
+        })
+        .replace('\t', '   ');
     this._stdOutBuffer = this._stdOutBuffer.concat(output.split('\n'));
+    this.render();
   }
 
   clear() {
     console.clear();
-  }
-
-  prompt(prompt=this._prompt) {
-    return new Promise(resolve => {
-      return this._readInterface.question(prompt, resolve);
-    });
   }
 
   close() {
