@@ -48,7 +48,7 @@ class ConsoleIO {
         CONSOLE_COLORS.Foreground.Red,
       ],
       info: [
-        CONSOLE_COLORS.Dim,
+        CONSOLE_COLORS.Bright,
         CONSOLE_COLORS.Foreground.Blue,
       ],
       log: [
@@ -252,7 +252,7 @@ class ConsoleIO {
             (typeof curr === 'string' ? 
               curr : util.inspect(curr, { depth: null, colors: true }));
         })
-        .replace('\t', '   ');
+        .replace(/\t/ig, '   ');
     this._stdOutBuffer = this._stdOutBuffer.concat(output.split('\n'));
     this.render();
   }

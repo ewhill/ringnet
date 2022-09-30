@@ -3,18 +3,10 @@
 const ArgumentsParser = require('../ArgumentsParser');
 
 const { ChatPeer } = require('./ChatPeer');
+const { Command } = require('./Command');
 const { ConsoleIO } = require('./ConsoleIO');
 
-const {
-    aliasCommandHandler,
-    debugCommandHandler,
-    discoverCommandHandler,
-    exitCommandHandler,
-    peersCommandHandler,
-    queueCommandHandler,
-    selfCommandHandler,
-    sidebarCommandHandler,
-  } = require('./commands/index');
+const COMMANDS = require('./commands/index');
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -74,20 +66,23 @@ const peer = new ChatPeer({
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-const COMMANDS = {
-  'alias': aliasCommandHandler,
-  'debug': debugCommandHandler,
-  'discover': discoverCommandHandler,
-  'exit': exitCommandHandler,
-  'peers': peersCommandHandler,
-  'queue': queueCommandHandler,
-  'self': selfCommandHandler,
-  'sidebar': sidebarCommandHandler,
-};
-
 function isCommandImplemented(command) {
   return COMMANDS.hasOwnProperty(command) && 
-    typeof COMMANDS[command] === 'function';
+    COMMANDS[command] instanceof Command;
+}
+
+async function showHelp(command) {
+  if(!isCommandImplemented(command)) {
+    throw new Error(`Command ${command} is not implemented!`);
+  }
+  io.net.info(
+    `HELP TEXT FOR '${command}':\n\n` +
+    `\t${COMMANDS[command].helpText.replace(/\n/g, '\n\t')}\n`);
+}
+
+async function showCommands() {
+  const availableCommands = '\t' + Object.keys(COMMANDS).sort().join('\n\t');
+  io.net.info(`Available commands:\n\n${availableCommands}\n`);
 }
 
 async function executeCommand(command, args) {
@@ -95,7 +90,7 @@ async function executeCommand(command, args) {
     throw new Error(`Command ${command} is not implemented!`);
   }
   const context = { peer, io };
-  return COMMANDS[command](context, ...args);
+  return COMMANDS[command].execute(context, ...args);
 }
 
 async function parseInput(line='') {
@@ -113,6 +108,16 @@ async function parseInput(line='') {
   if(isCommand) {
     const command = parts[0].slice(1);
     const args = parts.slice(1);
+
+    if(command === 'help') {
+      if(!args || args.length === 0) {
+        showCommands();
+      } else {
+        showHelp(args[0]);
+      }
+      return Promise.resolve(true);
+    }
+
     try {
       const result = await executeCommand(command, args);
       return Promise.resolve(result);

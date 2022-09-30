@@ -1,20 +1,21 @@
 
-const { aliasCommandHandler } = require('./alias');
-const { debugCommandHandler } = require('./debug');
-const { discoverCommandHandler } = require('./discover');
-const { exitCommandHandler } = require('./exit');
-const { peersCommandHandler } = require('./peers');
-const { queueCommandHandler } = require('./queue');
-const { selfCommandHandler } = require('./self');
-const { sidebarCommandHandler } = require('./sidebar');
+const aliasCommand = require('./alias');
+const debugCommand = require('./debug');
+const discoverCommand = require('./discover');
+const exitCommand = require('./exit');
+const peersCommand = require('./peers');
+const queueCommand = require('./queue');
+const selfCommand = require('./self');
+const sidebarCommand = require('./sidebar');
 
 module.exports = {
-	aliasCommandHandler,
-	debugCommandHandler,
-	discoverCommandHandler,
-	exitCommandHandler,
-	peersCommandHandler,
-	queueCommandHandler,
-	selfCommandHandler,
-	sidebarCommandHandler,
+	[aliasCommand.command]: aliasCommand,
+	[debugCommand.command]: debugCommand,
+	[discoverCommand.command]: discoverCommand,
+	[exitCommand.command]: exitCommand,
+	[peersCommand.command]: peersCommand,
+	[queueCommand.command]: queueCommand,
+	[selfCommand.command]: selfCommand,
+	[sidebarCommand.command]: sidebarCommand,
+	'help': ()=>{},
 };
